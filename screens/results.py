@@ -5,12 +5,12 @@ Inspired by the classic Dynix search results display.
 
 from datetime import datetime
 from typing import List, Optional
+from textual import work
 from textual.app import ComposeResult
 from textual.containers import Container, Vertical, Horizontal
 from textual.screen import Screen
 from textual.widgets import Static, ListView, ListItem, Label, LoadingIndicator
 from textual.binding import Binding
-from textual.worker import Worker, get_current_worker
 
 from api.client import KohaAPIClient, BiblioRecord, SearchResult
 from utils.config import KohaConfig
@@ -92,7 +92,7 @@ class SearchResultsScreen(Screen):
         super().__init__(*args, **kwargs)
         self.config = config
         self.api_client = api_client
-        self.query = query
+        self.search_query = query  # Renamed to avoid shadowing Screen.query
         self.search_type = search_type
         self.current_page = 1
         self.results: Optional[SearchResult] = None
@@ -106,7 +106,7 @@ class SearchResultsScreen(Screen):
         with Container(id="main-content"):
             # Search info
             yield Static(
-                f"Your Search: {self.query}",
+                f"Your Search: {self.search_query}",
                 id="search-info"
             )
             
@@ -164,24 +164,20 @@ class SearchResultsScreen(Screen):
         self.query_one("#results-list", ListView).display = False
         self._load_results()
     
-    def _load_results(self) -> None:
+    @work(exclusive=True)
+    async def _load_results(self) -> None:
         """Load search results asynchronously."""
         self.is_loading = True
-        self.run_worker(self._fetch_results(), exclusive=True)
-    
-    async def _fetch_results(self) -> None:
-        """Fetch results from the API."""
-        worker = get_current_worker()
         
         results, error = await self.api_client.search_biblios(
-            query=self.query,
+            query=self.search_query,
             search_type=self.search_type,
             page=self.current_page,
             per_page=self.config.items_per_page,
         )
         
-        if not worker.is_cancelled:
-            self.call_from_thread(self._update_results, results, error)
+        # Update UI (we're back on the main thread after await)
+        self._update_results(results, error)
     
     def _update_results(self, results: Optional[SearchResult], error: Optional[str]) -> None:
         """Update the UI with results."""

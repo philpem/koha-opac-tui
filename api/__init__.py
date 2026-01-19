@@ -7,9 +7,11 @@ from .client import (
     SearchResult,
     get_api_client,
 )
+from .mock_client import MockKohaAPIClient
 
 __all__ = [
     "KohaAPIClient",
+    "MockKohaAPIClient",
     "BiblioRecord",
     "HoldingItem",
     "SearchResult",

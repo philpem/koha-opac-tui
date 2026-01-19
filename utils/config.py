@@ -32,6 +32,9 @@ class KohaConfig:
     library_name: str = "PUBLIC LIBRARY"
     items_per_page: int = 10
     
+    # Demo mode - use mock data instead of real API
+    demo_mode: bool = False
+    
     # Timeout settings
     request_timeout: int = 30
     

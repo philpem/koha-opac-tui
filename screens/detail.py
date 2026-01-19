@@ -5,12 +5,12 @@ Shows item details in the top half and holdings/availability in the bottom half.
 
 from datetime import datetime
 from typing import List, Optional
+from textual import work
 from textual.app import ComposeResult
 from textual.containers import Container, Vertical, Horizontal, ScrollableContainer
 from textual.screen import Screen
 from textual.widgets import Static, DataTable, LoadingIndicator, Rule
 from textual.binding import Binding
-from textual.worker import Worker, get_current_worker
 
 from api.client import KohaAPIClient, BiblioRecord, HoldingItem
 from utils.config import KohaConfig
@@ -116,12 +116,11 @@ class ItemDetailScreen(Screen):
     
     def _load_record(self) -> None:
         """Load record details asynchronously."""
-        self.run_worker(self._fetch_record(), exclusive=True)
+        self._fetch_record()
     
+    @work(exclusive=True)
     async def _fetch_record(self) -> None:
         """Fetch record and holdings from the API."""
-        worker = get_current_worker()
-        
         # First, get libraries to resolve names
         await self.api_client.get_libraries()
         
@@ -131,14 +130,8 @@ class ItemDetailScreen(Screen):
         # Fetch holdings
         holdings, holdings_error = await self.api_client.get_biblio_items(self.biblio_id)
         
-        if not worker.is_cancelled:
-            self.call_from_thread(
-                self._update_display,
-                record,
-                record_error,
-                holdings,
-                holdings_error
-            )
+        # Update UI (we're back on the main thread after await)
+        self._update_display(record, record_error, holdings, holdings_error)
     
     def _update_display(
         self,

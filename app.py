@@ -23,6 +23,7 @@ from textual.app import App
 from utils.config import KohaConfig, get_config
 from utils.themes import get_theme, get_theme_css, THEMES
 from api.client import KohaAPIClient
+from api.mock_client import MockKohaAPIClient
 from screens import (
     MainMenuScreen,
     SearchScreen,
@@ -253,6 +254,16 @@ class KohaOPACApp(App):
             "text": theme.primary,
             "text-muted": theme.dim,
             "text-disabled": theme.dim,
+            # Text color variants
+            "text-success": "#33FF33",
+            "text-warning": "#FFB000",
+            "text-error": "#FF6666",
+            # Muted color variants
+            "success-muted": "#1a331a",
+            "warning-muted": "#332200",
+            "error-muted": "#331a1a",
+            "accent-muted": theme.highlight_bg,
+            "primary-muted": theme.highlight_bg,
             # Block/hover variables
             "block-cursor-background": theme.highlight_bg,
             "block-cursor-foreground": theme.secondary,
@@ -307,8 +318,11 @@ class KohaOPACApp(App):
     
     async def on_mount(self) -> None:
         """Initialize the application on mount."""
-        # Create API client
-        self._api_client = KohaAPIClient(self.config)
+        # Create API client (mock or real based on config)
+        if self.config.demo_mode:
+            self._api_client = MockKohaAPIClient(self.config)
+        else:
+            self._api_client = KohaAPIClient(self.config)
         await self._api_client.__aenter__()
         
         # Show main menu
@@ -393,6 +407,11 @@ def parse_args() -> argparse.Namespace:
         "--library",
         help="Library name to display"
     )
+    parser.add_argument(
+        "--demo",
+        action="store_true",
+        help="Run in demo mode with mock data (no server required)"
+    )
     return parser.parse_args()
 
 
@@ -410,6 +429,8 @@ def main():
         config.base_url = args.server
     if args.library:
         config.library_name = args.library
+    if args.demo:
+        config.demo_mode = True
     
     # Run the application
     app = KohaOPACApp(config)
