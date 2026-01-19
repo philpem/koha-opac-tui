@@ -1,0 +1,10 @@
+# Koha OPAC TUI - Dependencies
+
+# TUI Framework
+textual>=0.47.0
+
+# HTTP Client
+httpx>=0.25.0
+
+# For development
+rich>=13.0.0
