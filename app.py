@@ -19,7 +19,6 @@ import sys
 from typing import Any, Dict, Optional
 
 from textual.app import App
-from textual.css.stylesheet import Stylesheet
 
 from utils.config import KohaConfig, get_config
 from utils.themes import get_theme, get_theme_css, THEMES
@@ -219,18 +218,92 @@ class KohaOPACApp(App):
     """
     
     def __init__(self, config: Optional[KohaConfig] = None):
-        super().__init__()
         self.config = config or get_config()
         self._api_client: Optional[KohaAPIClient] = None
-        self._apply_theme()
+        super().__init__()
     
-    def _apply_theme(self) -> None:
-        """Apply the current theme CSS."""
+    def get_css_variables(self) -> dict[str, str]:
+        """Get CSS variables based on current theme."""
+        theme = get_theme(self.config.theme)
+        return {
+            # Theme colors
+            "primary": theme.primary,
+            "secondary": theme.secondary,
+            "background": theme.background,
+            "border": theme.border,
+            "header-bg": theme.header_bg,
+            "header-fg": theme.header_fg,
+            "highlight-bg": theme.highlight_bg,
+            "dim": theme.dim,
+            # Required Textual variables
+            "foreground": theme.primary,
+            "surface": theme.background,
+            "panel": theme.background,
+            "boost": theme.highlight_bg,
+            "warning": "#FFB000",
+            "error": "#FF6666",
+            "success": "#33FF33",
+            "accent": theme.secondary,
+            "primary-background": theme.background,
+            "primary-foreground": theme.primary,
+            "secondary-background": theme.highlight_bg,
+            "secondary-foreground": theme.secondary,
+            "foreground-muted": theme.dim,
+            "foreground-disabled": theme.dim,
+            "text": theme.primary,
+            "text-muted": theme.dim,
+            "text-disabled": theme.dim,
+            # Block/hover variables
+            "block-cursor-background": theme.highlight_bg,
+            "block-cursor-foreground": theme.secondary,
+            "block-cursor-text-style": "bold",
+            "block-hover-background": theme.highlight_bg,
+            "block-cursor-blurred-background": theme.background,
+            "block-cursor-blurred-foreground": theme.dim,
+            "block-cursor-blurred-text-style": "none",
+            # Scrollbar variables
+            "scrollbar": theme.dim,
+            "scrollbar-hover": theme.primary,
+            "scrollbar-active": theme.secondary,
+            "scrollbar-background": theme.background,
+            "scrollbar-background-hover": theme.highlight_bg,
+            "scrollbar-background-active": theme.highlight_bg,
+            "scrollbar-corner-color": theme.background,
+            "scrollbar-size": "1",
+            "scrollbar-size-vertical": "1",
+            "scrollbar-size-horizontal": "1",
+            # Link colors
+            "link-background": theme.background,
+            "link-background-hover": theme.highlight_bg,
+            "link-color": theme.secondary,
+            "link-color-hover": theme.secondary,
+            "link-style": "underline",
+            "link-style-hover": "bold underline",
+            # Footer/header
+            "footer-background": theme.header_bg,
+            "footer-foreground": theme.header_fg,
+            "footer-key-background": theme.background,
+            "footer-key-foreground": theme.primary,
+            "footer-description-background": theme.header_bg,
+            "footer-description-foreground": theme.header_fg,
+            # Input
+            "input-cursor-background": theme.primary,
+            "input-cursor-foreground": theme.background,
+            "input-cursor-text-style": "none",
+            "input-selection-background": theme.highlight_bg,
+            # Border
+            "border-blurred": theme.dim,
+            # Button
+            "button-foreground": theme.primary,
+            "button-color-foreground": theme.header_fg,
+        }
+    
+    @property
+    def css(self) -> str:
+        """Return combined CSS with theme."""
         theme = get_theme(self.config.theme)
         theme_css = get_theme_css(theme)
-        # Combine base CSS with theme CSS
-        self.stylesheet = Stylesheet()
-        self.stylesheet.parse(self.CSS + theme_css)
+        return self.CSS + theme_css
     
     async def on_mount(self) -> None:
         """Initialize the application on mount."""
@@ -298,9 +371,8 @@ class KohaOPACApp(App):
     def on_settings_screen_settings_changed(self, event) -> None:
         """Handle settings changes."""
         self.config = event.config
-        self._apply_theme()
-        # Force refresh
-        self.refresh(layout=True)
+        # Reload the app's CSS to pick up theme changes
+        self.refresh_css()
 
 
 def parse_args() -> argparse.Namespace:
