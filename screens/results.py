@@ -3,6 +3,7 @@ Search Results Screen - Displays search results in a list format.
 Inspired by the classic Dynix search results display.
 """
 
+import logging
 from typing import List, Optional
 from textual import work
 from textual.app import ComposeResult
@@ -15,6 +16,14 @@ from api.client import KohaAPIClient, BiblioRecord, SearchResult
 from utils.config import KohaConfig
 from widgets import HeaderBar, FooterBar
 
+# Set up file-based logging
+logger = logging.getLogger(__name__)
+_debug_handler = logging.FileHandler('/tmp/koha_tui_debug.log')
+_debug_handler.setLevel(logging.DEBUG)
+_debug_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+logger.addHandler(_debug_handler)
+logger.setLevel(logging.DEBUG)
+
 
 class ResultItem(ListItem):
     """A search result list item."""
@@ -25,35 +34,40 @@ class ResultItem(ListItem):
         self.record = record
     
     def compose(self) -> ComposeResult:
-        # Format the display text
-        author_info = self.record.author or "Unknown Author"
-        if self.record.publication_year:
-            author_info += f", {self.record.publication_year}"
+        # Format to fit 74 chars max (leaving room for margins/scrollbar)
+        author = self.record.author or "Unknown"
+        # Truncate author if needed
+        if len(author) > 28:
+            author = author[:25] + "..."
         
-        # Truncate title if too long
+        # Truncate title if too long  
         title = self.record.title
-        if len(title) > 55:
-            title = title[:52] + "..."
+        if len(title) > 40:
+            title = title[:37] + "..."
         
-        # Item type indicator
+        # Item type indicator (short)
         item_type = ""
-        if "sound" in (self.record.item_type or "").lower():
-            item_type = "[sound recording] "
-        elif "video" in (self.record.item_type or "").lower():
-            item_type = "[video] "
-        elif "dvd" in (self.record.item_type or "").lower():
+        itype = (self.record.item_type or "").lower()
+        if "sound" in itype:
+            item_type = "[CD] "
+        elif "video" in itype or "dvd" in itype:
             item_type = "[DVD] "
         
-        year_display = self.record.publication_year or ""
+        year = self.record.publication_year or ""
+        if len(year) > 4:
+            year = year[:4]
         
-        # Format as two lines like classic OPAC
-        line1 = f"{self.index:2d}. {author_info}"
-        line2 = f"      {item_type}{title}"
+        # Line 1: "1. Author Name                    YEAR"
+        # Line 2: "    Title"
+        # Keep under 74 chars
+        line1 = f"{self.index:2d}. {author}"
+        line2 = f"    {item_type}{title}"
         
-        # Pad line1 to align year on right
-        padding = 68 - len(line1)
-        if padding > 0:
-            line1 = line1 + " " * padding + year_display
+        # Add year right-aligned, total max 72 chars
+        if year:
+            padding = 68 - len(line1)
+            if padding > 0:
+                line1 = line1 + " " * padding + year
         
         yield Static(f"{line1}\n{line2}", classes="result-item-text")
 
@@ -72,6 +86,7 @@ class SearchResultsScreen(Screen):
         Binding("p", "prev_page", "Previous Page"),
         Binding("pagedown", "next_page", "Next Page", show=False),
         Binding("pageup", "prev_page", "Previous Page", show=False),
+        Binding("f1", "show_help", "Help"),
         Binding("1", "select_1", show=False),
         Binding("2", "select_2", show=False),
         Binding("3", "select_3", show=False),
@@ -136,17 +151,18 @@ class SearchResultsScreen(Screen):
         
         # Status bar
         yield FooterBar(
-            prompt="Enter item number or use arrow keys to select:",
-            shortcuts="1-9,0=Select, PgUp/PgDn=Pages, Esc=Back",
+            prompt="",
+            shortcuts="1-9,0=Select, F1=Help, Esc=Back",
             id="status-bar"
         )
     
     def _get_column_header(self) -> str:
-        """Get the column header row."""
-        return f"{'AUTHOR/TITLE':<66}{'DATE':>12}"
+        """Get the column header row - fits in 72 chars."""
+        return f"{'#':<4}{'AUTHOR / TITLE':<60}{'YEAR':>8}"
     
     def on_mount(self) -> None:
         """Start loading results when mounted."""
+        logger.debug(f"SearchResultsScreen mounted, query='{self.search_query}', type='{self.search_type}'")
         self.query_one("#loading", LoadingIndicator).display = True
         self.query_one("#results-list", ListView).display = False
         self._load_results()
@@ -154,20 +170,27 @@ class SearchResultsScreen(Screen):
     @work(exclusive=True)
     async def _load_results(self) -> None:
         """Load search results asynchronously."""
+        logger.debug(f"_load_results called, query='{self.search_query}'")
+        logger.debug(f"api_client type: {type(self.api_client).__name__}")
+        logger.debug(f"api_client config base_url: {self.api_client.config.base_url}")
         self.is_loading = True
         
+        # Load more results at once - let the list scroll
+        logger.debug(f"Calling api_client.search_biblios...")
         results, error = await self.api_client.search_biblios(
             query=self.search_query,
             search_type=self.search_type,
-            page=self.current_page,
-            per_page=self.config.items_per_page,
+            page=1,
+            per_page=100,  # Load all at once, let list scroll
         )
+        logger.debug(f"search_biblios returned: results={results}, error={error}")
         
         # Update UI (we're back on the main thread after await)
         self._update_results(results, error)
     
     def _update_results(self, results: Optional[SearchResult], error: Optional[str]) -> None:
         """Update the UI with results."""
+        logger.debug(f"_update_results called: results={results}, error={error}")
         self.is_loading = False
         self.query_one("#loading", LoadingIndicator).display = False
         
@@ -175,16 +198,19 @@ class SearchResultsScreen(Screen):
         results_list.clear()
         
         if error:
+            logger.debug(f"Displaying error: {error}")
             results_list.append(ListItem(Static(f"Error: {error}")))
             results_list.display = True
             return
         
         if not results or not results.records:
+            logger.debug("No results to display")
             results_list.append(ListItem(Static("No results found.")))
             results_list.display = True
             self._update_pagination(0, 0, 1)
             return
         
+        logger.debug(f"Displaying {len(results.records)} results")
         self.results = results
         
         # Add result items
@@ -193,6 +219,10 @@ class SearchResultsScreen(Screen):
         
         results_list.display = True
         results_list.focus()
+        
+        # Select the first item
+        if results_list.children:
+            results_list.index = 0
         
         # Update pagination info
         self._update_pagination(results.total_count, len(results.records), results.total_pages)
@@ -203,10 +233,7 @@ class SearchResultsScreen(Screen):
         if total == 0:
             pagination.update("No items found")
         else:
-            pagination.update(
-                f"** {total} Items - Page {self.current_page} of {total_pages} - "
-                f"{'More on Next Screen' if self.current_page < total_pages else 'End of Results'} **"
-            )
+            pagination.update(f"** {total} Items - Use arrow keys to scroll **")
     
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         """Handle result selection."""
@@ -284,3 +311,7 @@ class SearchResultsScreen(Screen):
     
     def action_select_10(self) -> None:
         self._select_by_number(10)
+    
+    def action_show_help(self) -> None:
+        """Show help screen."""
+        self.app.push_screen("help", {"context": "results"})

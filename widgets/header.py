@@ -15,6 +15,17 @@ class HeaderBar(Static):
     The time updates automatically.
     """
     
+    DEFAULT_CSS = """
+    HeaderBar {
+        height: 2;
+        width: 100%;
+        dock: top;
+        background: $header-bg;
+        color: $header-fg;
+        text-style: bold;
+    }
+    """
+    
     current_time = reactive("")
     
     def __init__(
@@ -27,12 +38,15 @@ class HeaderBar(Static):
         super().__init__(*args, **kwargs)
         self.library_name = library_name.upper()
         self.opac_name = opac_name
-        self.add_class("header-bar")
     
     def on_mount(self) -> None:
         """Start the timer to update time."""
         self.current_time = datetime.now().strftime("%I:%M%p").lower()
         self.set_interval(1, self._update_time)
+        self._refresh_display()
+    
+    def on_resize(self, event) -> None:
+        """Re-render when resized."""
         self._refresh_display()
     
     def _update_time(self) -> None:
@@ -48,24 +62,26 @@ class HeaderBar(Static):
         now = datetime.now()
         date_str = now.strftime("%d %b %Y").upper()
         
-        # Build the two-line header
+        # Get actual width from the widget
+        width = self.size.width if self.size.width > 0 else 80
+        
         # Line 1: Date left, Library name center, Time right
-        # Line 2: OPAC name centered
-        
-        width = 80  # Standard terminal width
-        
-        # Line 1
         left = date_str
         center = self.library_name
         right = self.current_time
         
-        # Calculate padding for center alignment
-        total_content = len(left) + len(center) + len(right)
-        remaining = width - total_content
-        left_pad = remaining // 2
-        right_pad = remaining - left_pad
+        # Calculate spacing to center the library name
+        # Total: left + space + center + space + right = width
+        total_fixed = len(left) + len(center) + len(right)
+        total_space = width - total_fixed
         
-        line1 = f"{left}{' ' * left_pad}{center}{' ' * right_pad}{right}"
+        if total_space >= 2:
+            left_space = (width - len(center)) // 2 - len(left)
+            right_space = width - len(left) - left_space - len(center) - len(right)
+            line1 = f"{left}{' ' * max(1, left_space)}{center}{' ' * max(1, right_space)}{right}"
+        else:
+            # Narrow screen - just show what fits
+            line1 = f"{left} {center} {right}"
         
         # Line 2: OPAC name centered
         line2 = self.opac_name.center(width)
@@ -78,6 +94,18 @@ class FooterBar(Static):
     Footer/status bar widget that displays context-sensitive help.
     """
     
+    DEFAULT_CSS = """
+    FooterBar {
+        height: 1;
+        width: 100%;
+        dock: bottom;
+        background: $header-bg;
+        color: $header-fg;
+        text-style: bold;
+        padding: 0 1;
+    }
+    """
+    
     def __init__(
         self,
         prompt: str = "",
@@ -88,27 +116,12 @@ class FooterBar(Static):
         super().__init__(*args, **kwargs)
         self.prompt = prompt
         self.shortcuts = shortcuts
-        self.add_class("status-bar")
     
     def on_mount(self) -> None:
         """Set initial content."""
-        self._refresh_display()
-    
-    def _refresh_display(self) -> None:
-        """Refresh the footer display."""
-        lines = []
-        if self.prompt:
-            lines.append(self.prompt)
-        if self.shortcuts:
-            lines.append(self.shortcuts)
-        self.update("\n".join(lines) if lines else "")
-    
-    def set_prompt(self, prompt: str) -> None:
-        """Update the prompt text."""
-        self.prompt = prompt
-        self._refresh_display()
+        self.update(self.shortcuts)
     
     def set_shortcuts(self, shortcuts: str) -> None:
         """Update the shortcuts text."""
         self.shortcuts = shortcuts
-        self._refresh_display()
+        self.update(self.shortcuts)

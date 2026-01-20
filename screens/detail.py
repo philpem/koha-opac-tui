@@ -26,6 +26,7 @@ class ItemDetailScreen(Screen):
         Binding("escape", "go_back", "Back"),
         Binding("b", "go_back", "Back", show=False),
         Binding("q", "go_back", "Back", show=False),
+        Binding("f1", "show_help", "Help"),
     ]
     
     def __init__(
@@ -56,25 +57,19 @@ class ItemDetailScreen(Screen):
             # Loading indicator
             yield LoadingIndicator(id="loading")
             
-            # Upper section - Bibliographic Details
-            with ScrollableContainer(id="biblio-section"):
-                yield Static("── BIBLIOGRAPHIC DETAILS ──", classes="box-title")
-                with Container(id="detail-container", classes="content-box"):
-                    yield Static("Loading...", id="biblio-details")
+            # Bibliographic Details - compact single line title
+            yield Static("BIBLIOGRAPHIC DETAILS", id="biblio-title", classes="section-title")
+            yield Static("Loading...", id="biblio-details")
             
-            # Divider
-            yield Rule(line_style="heavy")
-            
-            # Lower section - Holdings Information
-            with Container(id="holdings-section"):
-                yield Static("── ITEM HOLDINGS ──", classes="box-title")
-                yield DataTable(id="holdings-table")
-                yield Static("", id="holdings-summary")
+            # Holdings section
+            yield Static("HOLDINGS", id="holdings-title", classes="section-title")
+            yield DataTable(id="holdings-table")
+            yield Static("", id="holdings-summary")
         
         # Status bar
         yield FooterBar(
-            prompt="Use arrow keys to scroll through holdings",
-            shortcuts="Esc=Back to results",
+            prompt="",
+            shortcuts="F1=Help, Esc=Back to results",
             id="status-bar"
         )
     
@@ -164,7 +159,7 @@ class ItemDetailScreen(Screen):
             on_loan = sum(1 for h in holdings if h.status == "On Loan")
             
             summary.update(
-                f"\nTotal copies: {total} | Available: {available} | On loan: {on_loan}"
+                f"Total copies: {total} | Available: {available} | On loan: {on_loan}"
             )
             
             table.display = True
@@ -173,93 +168,48 @@ class ItemDetailScreen(Screen):
             summary.update("No copies available in the system.")
     
     def _format_biblio_details(self, record: BiblioRecord) -> str:
-        """Format bibliographic record for display."""
+        """Format bibliographic record for display - compact for 80x25."""
         lines = []
         
-        # Title (prominent)
+        # Title (prominent) - may wrap
         title = record.title or "Unknown Title"
-        lines.append(f"Title:          {title}")
-        lines.append("")
+        lines.append(f"Title:     {title}")
         
         # Author
         if record.author:
-            lines.append(f"Author:         {record.author}")
+            lines.append(f"Author:    {record.author}")
         
-        # Publication info
-        pub_info = []
+        # Publication info on one line
+        pub_parts = []
         if record.publisher:
-            pub_info.append(record.publisher)
+            pub_parts.append(record.publisher)
         if record.publication_year:
-            pub_info.append(record.publication_year)
-        if pub_info:
-            lines.append(f"Published:      {', '.join(pub_info)}")
+            pub_parts.append(record.publication_year)
+        if pub_parts:
+            lines.append(f"Published: {', '.join(pub_parts)}")
         
-        # Edition
-        if record.edition:
-            lines.append(f"Edition:        {record.edition}")
-        
-        # Physical description
-        if record.physical_description:
-            lines.append(f"Description:    {record.physical_description}")
-        
-        # ISBN
+        # ISBN and Call Number on same line if both exist
+        extra = []
         if record.isbn:
-            lines.append(f"ISBN:           {record.isbn}")
-        
-        # Call number
+            extra.append(f"ISBN: {record.isbn}")
         if record.call_number:
-            lines.append(f"Call Number:    {record.call_number}")
+            extra.append(f"Call#: {record.call_number}")
+        if extra:
+            lines.append("  ".join(extra))
         
-        # Item type
-        if record.item_type:
-            lines.append(f"Material Type:  {record.item_type}")
-        
-        # Series
-        if record.series:
-            lines.append(f"Series:         {record.series}")
-        
-        # Subjects
-        if record.subjects:
-            lines.append(f"Subjects:       {'; '.join(record.subjects)}")
-        
-        # Summary/abstract
+        # Summary - truncate if too long
         if record.summary:
-            lines.append("")
-            lines.append("Summary:")
-            # Word wrap the summary
-            summary_lines = self._wrap_text(record.summary, 70)
-            for line in summary_lines:
-                lines.append(f"  {line}")
-        
-        # Notes
-        if record.notes:
-            lines.append("")
-            lines.append(f"Notes:          {record.notes}")
+            summary = record.summary
+            if len(summary) > 150:
+                summary = summary[:147] + "..."
+            lines.append(f"Summary:   {summary}")
         
         return "\n".join(lines)
-    
-    def _wrap_text(self, text: str, width: int) -> List[str]:
-        """Simple word wrapping."""
-        words = text.split()
-        lines = []
-        current_line = []
-        current_length = 0
-        
-        for word in words:
-            if current_length + len(word) + 1 <= width:
-                current_line.append(word)
-                current_length += len(word) + 1
-            else:
-                if current_line:
-                    lines.append(" ".join(current_line))
-                current_line = [word]
-                current_length = len(word)
-        
-        if current_line:
-            lines.append(" ".join(current_line))
-        
-        return lines
     
     def action_go_back(self) -> None:
         """Go back to results screen."""
         self.app.pop_screen()
+    
+    def action_show_help(self) -> None:
+        """Show help screen."""
+        self.app.push_screen("help", {"context": "detail"})

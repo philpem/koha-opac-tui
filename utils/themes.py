@@ -174,17 +174,26 @@ def get_theme_css(theme: TerminalTheme) -> str:
     
     .detail-label {{
         color: {theme.dim};
-        width: 20;
+        width: 15;
     }}
     
     .detail-value {{
         color: {theme.primary};
     }}
     
+    .section-title {{
+        background: {theme.header_bg};
+        color: {theme.header_fg};
+        text-style: bold;
+        padding: 0 1;
+        height: 1;
+    }}
+    
     .holdings-header {{
         background: {theme.header_bg};
         color: {theme.header_fg};
         text-style: bold;
+        height: 1;
     }}
     
     .holdings-row {{

@@ -23,6 +23,7 @@ class SearchScreen(Screen):
     BINDINGS = [
         Binding("escape", "go_back", "Back"),
         Binding("ctrl+c", "go_back", "Back", show=False),
+        Binding("f1", "show_help", "Help"),
     ]
     
     def __init__(
@@ -74,7 +75,7 @@ class SearchScreen(Screen):
         # Footer with shortcuts
         yield FooterBar(
             prompt="",
-            shortcuts="Esc=Back, Enter=Search",
+            shortcuts="Enter=Search, F1=Help, Esc=Back",
             id="status-bar"
         )
     
@@ -160,3 +161,7 @@ class SearchScreen(Screen):
     def action_go_back(self) -> None:
         """Go back to previous screen."""
         self.app.pop_screen()
+    
+    def action_show_help(self) -> None:
+        """Show help screen."""
+        self.app.push_screen("help", {"context": "search"})

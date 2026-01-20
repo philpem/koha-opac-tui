@@ -45,7 +45,7 @@ class MainMenuScreen(Screen):
         Binding("0", "select_0", "Quit", show=False),
         Binding("q", "quit_app", "Quit"),
         Binding("escape", "quit_app", "Quit"),
-        Binding("question_mark", "show_help", "Help", key_display="?"),
+        Binding("f1", "show_help", "Help"),
     ]
     
     def __init__(self, config: KohaConfig, *args, **kwargs):
@@ -88,7 +88,7 @@ class MainMenuScreen(Screen):
         # Status bar
         yield FooterBar(
             prompt="Enter your selection and press <Enter>:",
-            shortcuts="1-9,0=Select, ?=Help, Q=Quit",
+            shortcuts="1-9,0=Select, F1=Help, Q=Quit",
             id="status-bar"
         )
     
@@ -162,4 +162,4 @@ class MainMenuScreen(Screen):
     
     def action_show_help(self) -> None:
         """Show help screen."""
-        self.app.push_screen("help")
+        self.app.push_screen("help", {"context": "main_menu"})

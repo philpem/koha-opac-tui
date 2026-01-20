@@ -59,12 +59,12 @@ class KohaOPACApp(App):
     
     #main-content {
         height: 1fr;
-        padding: 1;
+        padding: 0 1;
     }
     
     #status-bar {
         dock: bottom;
-        height: 3;
+        height: 1;
         width: 100%;
     }
     
@@ -193,8 +193,12 @@ class KohaOPACApp(App):
         padding-right: 2;
     }
     
+    #theme-row {
+        height: auto;
+    }
+    
     #button-row {
-        padding-top: 2;
+        padding-top: 1;
         height: auto;
     }
     
@@ -203,8 +207,7 @@ class KohaOPACApp(App):
     }
     
     #status-message {
-        padding: 1;
-        text-style: italic;
+        height: auto;
     }
     
     /* About screen */
@@ -254,7 +257,9 @@ class KohaOPACApp(App):
             "text": theme.primary,
             "text-muted": theme.dim,
             "text-disabled": theme.dim,
-            # Text color variants
+            "text-primary": theme.primary,
+            "text-secondary": theme.secondary,
+            "text-accent": theme.secondary,
             "text-success": "#33FF33",
             "text-warning": "#FFB000",
             "text-error": "#FF6666",
@@ -265,6 +270,27 @@ class KohaOPACApp(App):
             "accent-muted": theme.highlight_bg,
             "primary-muted": theme.highlight_bg,
             "secondary-muted": theme.highlight_bg,
+            # Success variants
+            "success-darken-1": "#29cc29",
+            "success-darken-2": "#1f991f",
+            "success-darken-3": "#146614",
+            "success-lighten-1": "#5cff5c",
+            "success-lighten-2": "#85ff85",
+            "success-lighten-3": "#adffad",
+            # Warning variants
+            "warning-darken-1": "#cc8c00",
+            "warning-darken-2": "#996900",
+            "warning-darken-3": "#664600",
+            "warning-lighten-1": "#ffc033",
+            "warning-lighten-2": "#ffd066",
+            "warning-lighten-3": "#ffe099",
+            # Error variants
+            "error-darken-1": "#cc5252",
+            "error-darken-2": "#993d3d",
+            "error-darken-3": "#662929",
+            "error-lighten-1": "#ff8585",
+            "error-lighten-2": "#ffa3a3",
+            "error-lighten-3": "#ffc2c2",
             # Surface variants (for DataTable zebra stripes etc.)
             "surface-darken-1": theme.highlight_bg,
             "surface-darken-2": theme.highlight_bg,
@@ -272,6 +298,13 @@ class KohaOPACApp(App):
             "surface-lighten-1": theme.highlight_bg,
             "surface-lighten-2": theme.highlight_bg,
             "surface-lighten-3": theme.highlight_bg,
+            # Panel variants (for RadioSet etc.)
+            "panel-darken-1": theme.highlight_bg,
+            "panel-darken-2": theme.highlight_bg,
+            "panel-darken-3": theme.highlight_bg,
+            "panel-lighten-1": theme.highlight_bg,
+            "panel-lighten-2": theme.highlight_bg,
+            "panel-lighten-3": theme.highlight_bg,
             # Accent variants
             "accent-darken-1": theme.highlight_bg,
             "accent-darken-2": theme.highlight_bg,
@@ -336,6 +369,10 @@ class KohaOPACApp(App):
             # Button
             "button-foreground": theme.primary,
             "button-color-foreground": theme.header_fg,
+            "button-focus-text-style": "bold",
+            "button-background": theme.highlight_bg,
+            "button-background-hover": theme.highlight_bg,
+            "button-background-active": theme.background,
         }
     
     @property
@@ -404,10 +441,10 @@ class KohaOPACApp(App):
             return SettingsScreen(self.config)
         
         elif name == "about":
-            return AboutScreen()
+            return AboutScreen(self.config)
         
         elif name == "help":
-            return HelpScreen(self.config)
+            return HelpScreen(self.config, context=params.get("context", "general"))
         
         return None
     
@@ -458,8 +495,9 @@ def main():
         config.base_url = args.server
     if args.library:
         config.library_name = args.library
-    if args.demo:
-        config.demo_mode = True
+    
+    # Demo mode ONLY from command line flag, never from config
+    config.demo_mode = args.demo
     
     # Run the application
     app = KohaOPACApp(config)

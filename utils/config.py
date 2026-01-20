@@ -17,8 +17,8 @@ CONFIG_FILE = CONFIG_DIR / "config.json"
 class KohaConfig:
     """Configuration for connecting to a Koha instance."""
     
-    # Server settings
-    base_url: str = "https://demo.koha-community.org"
+    # Server settings - must be configured for real use
+    base_url: str = "https://your-koha-server.org"
     api_version: str = "v1"
     
     # Authentication (optional for public endpoints)

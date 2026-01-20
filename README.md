@@ -37,16 +37,21 @@ pip install -r requirements.txt
 ### Basic Usage
 
 ```bash
-python app.py
+# Run with demo mode (uses sample data, no server needed)
+python app.py --demo
+
+# Run with a real Koha server
+python app.py --server https://your-koha-server.org
 ```
 
 ### Command Line Options
 
 ```bash
-python app.py --theme amber    # Use amber phosphor theme
-python app.py --theme green    # Use green phosphor theme
-python app.py --theme white    # Use white on black theme
-python app.py --theme blue     # Use blue terminal theme
+python app.py --demo              # Use demo mode with sample data
+python app.py --theme amber       # Use amber phosphor theme
+python app.py --theme green       # Use green phosphor theme  
+python app.py --theme white       # Use white on black theme
+python app.py --theme blue        # Use blue terminal theme
 
 python app.py --server https://your-koha-server.org
 python app.py --library "Your Library Name"
@@ -60,16 +65,15 @@ python app.py --library "Your Library Name"
 | 1-9, 0 | Quick select menu option |
 | ↑/↓ | Navigate menu items |
 | Enter | Select highlighted item |
-| Q | Quit application |
-| ? | Show help |
+| Q / Esc | Quit application |
+| F1 | Show help |
 
 #### Search Screen
 | Key | Action |
 |-----|--------|
 | Enter | Submit search |
 | Escape | Go back |
-| Type "SO" | Start over (main menu) |
-| Type "B" | Go back |
+| F1 | Show help |
 
 #### Search Results
 | Key | Action |
@@ -77,15 +81,15 @@ python app.py --library "Your Library Name"
 | 1-9, 0 | Select result by number |
 | ↑/↓ | Navigate results |
 | Enter | View selected item details |
-| N / Page Down | Next page |
-| P / Page Up | Previous page |
-| B / Escape | Go back |
+| Escape | Go back |
+| F1 | Show help |
 
 #### Item Detail
 | Key | Action |
 |-----|--------|
 | ↑/↓ | Scroll holdings table |
-| B / Escape | Go back to results |
+| Escape | Go back to results |
+| F1 | Show help |
 
 ## Configuration
 
