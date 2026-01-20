@@ -148,6 +148,10 @@ def get_theme_css(theme: TerminalTheme) -> str:
         color: {theme.secondary};
     }}
     
+    .result-item-text {{
+        color: {theme.primary};
+    }}
+    
     .result-number {{
         color: {theme.secondary};
         text-style: bold;

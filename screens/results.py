@@ -3,17 +3,17 @@ Search Results Screen - Displays search results in a list format.
 Inspired by the classic Dynix search results display.
 """
 
-from datetime import datetime
 from typing import List, Optional
 from textual import work
 from textual.app import ComposeResult
 from textual.containers import Container, Vertical, Horizontal
 from textual.screen import Screen
-from textual.widgets import Static, ListView, ListItem, Label, LoadingIndicator
+from textual.widgets import Static, ListView, ListItem, LoadingIndicator
 from textual.binding import Binding
 
 from api.client import KohaAPIClient, BiblioRecord, SearchResult
 from utils.config import KohaConfig
+from widgets import HeaderBar, FooterBar
 
 
 class ResultItem(ListItem):
@@ -25,15 +25,15 @@ class ResultItem(ListItem):
         self.record = record
     
     def compose(self) -> ComposeResult:
-        # Format: "1. Author Name, Date\n    Title"
+        # Format the display text
         author_info = self.record.author or "Unknown Author"
         if self.record.publication_year:
             author_info += f", {self.record.publication_year}"
         
         # Truncate title if too long
         title = self.record.title
-        if len(title) > 60:
-            title = title[:57] + "..."
+        if len(title) > 55:
+            title = title[:52] + "..."
         
         # Item type indicator
         item_type = ""
@@ -46,12 +46,16 @@ class ResultItem(ListItem):
         
         year_display = self.record.publication_year or ""
         
-        with Horizontal():
-            yield Static(f"{self.index}.", classes="result-number")
-            with Vertical():
-                yield Static(f"{author_info}", classes="result-author")
-                yield Static(f"    {item_type}{title}", classes="result-title")
-            yield Static(year_display, classes="result-date")
+        # Format as two lines like classic OPAC
+        line1 = f"{self.index:2d}. {author_info}"
+        line2 = f"      {item_type}{title}"
+        
+        # Pad line1 to align year on right
+        padding = 68 - len(line1)
+        if padding > 0:
+            line1 = line1 + " " * padding + year_display
+        
+        yield Static(f"{line1}\n{line2}", classes="result-item-text")
 
 
 class SearchResultsScreen(Screen):
@@ -101,7 +105,11 @@ class SearchResultsScreen(Screen):
     def compose(self) -> ComposeResult:
         """Compose the results screen layout."""
         # Header bar
-        yield Static(self._get_header_text(), id="header", classes="header-bar")
+        yield HeaderBar(
+            library_name=self.config.library_name,
+            opac_name="Dial Pac",
+            id="header"
+        )
         
         with Container(id="main-content"):
             # Search info
@@ -127,36 +135,15 @@ class SearchResultsScreen(Screen):
             yield Static("", id="pagination-info", classes="pagination-info")
         
         # Status bar
-        yield Static(self._get_status_text(), id="status-bar", classes="status-bar")
-    
-    def _get_header_text(self) -> str:
-        """Generate the header bar text."""
-        now = datetime.now()
-        date_str = now.strftime("%d %b %Y").upper()
-        time_str = now.strftime("%I:%M%p").lower()
-        
-        library_name = self.config.library_name.upper()
-        
-        left = f"  {date_str}"
-        center = library_name
-        right = f"{time_str}  "
-        
-        total_width = 80
-        left_space = (total_width - len(center)) // 2 - len(left)
-        right_space = total_width - len(left) - left_space - len(center) - len(right)
-        
-        return f"{left}{' ' * max(1, left_space)}{center}{' ' * max(1, right_space)}{right}\n{'Dial Pac':^80}"
+        yield FooterBar(
+            prompt="Enter item number or use arrow keys to select:",
+            shortcuts="1-9,0=Select, PgUp/PgDn=Pages, Esc=Back",
+            id="status-bar"
+        )
     
     def _get_column_header(self) -> str:
         """Get the column header row."""
         return f"{'AUTHOR/TITLE':<66}{'DATE':>12}"
-    
-    def _get_status_text(self) -> str:
-        """Generate the status bar text."""
-        return (
-            "Enter an item number for more detail :\n"
-            "SO=Start Over, B=Back, SL=Sort List, ?=Help, <Enter>=Next Screen"
-        )
     
     def on_mount(self) -> None:
         """Start loading results when mounted."""

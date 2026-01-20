@@ -3,7 +3,6 @@ Item Detail Screen - Displays detailed bibliographic information and holdings.
 Shows item details in the top half and holdings/availability in the bottom half.
 """
 
-from datetime import datetime
 from typing import List, Optional
 from textual import work
 from textual.app import ComposeResult
@@ -14,6 +13,7 @@ from textual.binding import Binding
 
 from api.client import KohaAPIClient, BiblioRecord, HoldingItem
 from utils.config import KohaConfig
+from widgets import HeaderBar, FooterBar
 
 
 class ItemDetailScreen(Screen):
@@ -46,7 +46,11 @@ class ItemDetailScreen(Screen):
     def compose(self) -> ComposeResult:
         """Compose the detail screen layout."""
         # Header bar
-        yield Static(self._get_header_text(), id="header", classes="header-bar")
+        yield HeaderBar(
+            library_name=self.config.library_name,
+            opac_name="Dial Pac",
+            id="header"
+        )
         
         with Container(id="main-content"):
             # Loading indicator
@@ -68,31 +72,10 @@ class ItemDetailScreen(Screen):
                 yield Static("", id="holdings-summary")
         
         # Status bar
-        yield Static(self._get_status_text(), id="status-bar", classes="status-bar")
-    
-    def _get_header_text(self) -> str:
-        """Generate the header bar text."""
-        now = datetime.now()
-        date_str = now.strftime("%d %b %Y").upper()
-        time_str = now.strftime("%I:%M%p").lower()
-        
-        library_name = self.config.library_name.upper()
-        
-        left = f"  {date_str}"
-        center = library_name
-        right = f"{time_str}  "
-        
-        total_width = 80
-        left_space = (total_width - len(center)) // 2 - len(left)
-        right_space = total_width - len(left) - left_space - len(center) - len(right)
-        
-        return f"{left}{' ' * max(1, left_space)}{center}{' ' * max(1, right_space)}{right}\n{'Dial Pac':^80}"
-    
-    def _get_status_text(self) -> str:
-        """Generate the status bar text."""
-        return (
-            "B=Back to results, ?=Help\n"
-            "Use arrow keys to scroll through holdings"
+        yield FooterBar(
+            prompt="Use arrow keys to scroll through holdings",
+            shortcuts="Esc=Back to results",
+            id="status-bar"
         )
     
     def on_mount(self) -> None:

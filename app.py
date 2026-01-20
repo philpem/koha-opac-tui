@@ -264,6 +264,35 @@ class KohaOPACApp(App):
             "error-muted": "#331a1a",
             "accent-muted": theme.highlight_bg,
             "primary-muted": theme.highlight_bg,
+            "secondary-muted": theme.highlight_bg,
+            # Surface variants (for DataTable zebra stripes etc.)
+            "surface-darken-1": theme.highlight_bg,
+            "surface-darken-2": theme.highlight_bg,
+            "surface-darken-3": theme.highlight_bg,
+            "surface-lighten-1": theme.highlight_bg,
+            "surface-lighten-2": theme.highlight_bg,
+            "surface-lighten-3": theme.highlight_bg,
+            # Accent variants
+            "accent-darken-1": theme.highlight_bg,
+            "accent-darken-2": theme.highlight_bg,
+            "accent-darken-3": theme.highlight_bg,
+            "accent-lighten-1": theme.secondary,
+            "accent-lighten-2": theme.secondary,
+            "accent-lighten-3": theme.secondary,
+            # Primary variants
+            "primary-darken-1": theme.highlight_bg,
+            "primary-darken-2": theme.highlight_bg,
+            "primary-darken-3": theme.highlight_bg,
+            "primary-lighten-1": theme.secondary,
+            "primary-lighten-2": theme.secondary,
+            "primary-lighten-3": theme.secondary,
+            # Secondary variants
+            "secondary-darken-1": theme.highlight_bg,
+            "secondary-darken-2": theme.highlight_bg,
+            "secondary-darken-3": theme.highlight_bg,
+            "secondary-lighten-1": theme.secondary,
+            "secondary-lighten-2": theme.secondary,
+            "secondary-lighten-3": theme.secondary,
             # Block/hover variables
             "block-cursor-background": theme.highlight_bg,
             "block-cursor-foreground": theme.secondary,
@@ -378,7 +407,7 @@ class KohaOPACApp(App):
             return AboutScreen()
         
         elif name == "help":
-            return HelpScreen()
+            return HelpScreen(self.config)
         
         return None
     

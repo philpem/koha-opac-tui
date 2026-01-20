@@ -1,3 +1,5 @@
 """Custom widgets for the Koha OPAC TUI."""
 
-# Future home of custom widgets if needed
+from .header import HeaderBar, FooterBar
+
+__all__ = ["HeaderBar", "FooterBar"]

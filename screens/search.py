@@ -3,15 +3,15 @@ Search Screen - Interface for entering search queries.
 Inspired by the classic Dynix author/title search screens.
 """
 
-from datetime import datetime
 from typing import Dict, Any, Optional
 from textual.app import ComposeResult
 from textual.containers import Container, Vertical
 from textual.screen import Screen
-from textual.widgets import Static, Input, Label
+from textual.widgets import Static, Input
 from textual.binding import Binding
 
 from utils.config import KohaConfig
+from widgets import HeaderBar, FooterBar
 
 
 class SearchScreen(Screen):
@@ -41,7 +41,11 @@ class SearchScreen(Screen):
     def compose(self) -> ComposeResult:
         """Compose the search screen layout."""
         # Header bar
-        yield Static(self._get_header_text(), id="header", classes="header-bar")
+        yield HeaderBar(
+            library_name=self.config.library_name,
+            opac_name="Dial Pac",
+            id="header"
+        )
         
         with Container(id="main-content"):
             # Search type title
@@ -59,36 +63,20 @@ class SearchScreen(Screen):
             yield Static("", id="spacer")
         
         # Input area at bottom
-        with Container(id="input-area", classes="status-bar"):
+        with Container(id="input-area"):
             yield Static(self._get_prompt_text(), id="prompt-label")
             yield Input(
                 placeholder=f"Enter {self.prompt.lower()}...",
                 id="search-input",
                 classes="input-field"
             )
-            yield Static(
-                "SO=Start Over, B=Back, ?=Help",
-                id="help-hint",
-                classes="help-text"
-            )
-    
-    def _get_header_text(self) -> str:
-        """Generate the header bar text."""
-        now = datetime.now()
-        date_str = now.strftime("%d %b %Y").upper()
-        time_str = now.strftime("%I:%M%p").lower()
         
-        library_name = self.config.library_name.upper()
-        
-        left = f"  {date_str}"
-        center = library_name
-        right = f"{time_str}  "
-        
-        total_width = 80
-        left_space = (total_width - len(center)) // 2 - len(left)
-        right_space = total_width - len(left) - left_space - len(center) - len(right)
-        
-        return f"{left}{' ' * max(1, left_space)}{center}{' ' * max(1, right_space)}{right}\n{'Dial Pac':^80}"
+        # Footer with shortcuts
+        yield FooterBar(
+            prompt="",
+            shortcuts="Esc=Back, Enter=Search",
+            id="status-bar"
+        )
     
     def _get_examples_text(self) -> str:
         """Get example text based on search type."""
@@ -168,12 +156,6 @@ class SearchScreen(Screen):
                     "search_type": self.search_type,
                 }
             )
-        elif query.upper() == "SO":
-            # Start over - go back to main menu
-            self.app.pop_screen()
-            self.app.pop_screen()  # Pop back to main menu
-        elif query.upper() == "B":
-            self.action_go_back()
     
     def action_go_back(self) -> None:
         """Go back to previous screen."""

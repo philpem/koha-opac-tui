@@ -3,14 +3,14 @@ Main Menu Screen - The primary navigation interface for the OPAC.
 Inspired by the classic Dynix/BLCMP terminal interface.
 """
 
-from datetime import datetime
 from textual.app import ComposeResult
-from textual.containers import Container, Horizontal, Vertical
+from textual.containers import Container
 from textual.screen import Screen
-from textual.widgets import Static, Label, ListItem, ListView
+from textual.widgets import Static, ListItem, ListView
 from textual.binding import Binding
 
 from utils.config import KohaConfig
+from widgets import HeaderBar, FooterBar
 
 
 class MenuItem(ListItem):
@@ -45,7 +45,7 @@ class MainMenuScreen(Screen):
         Binding("0", "select_0", "Quit", show=False),
         Binding("q", "quit_app", "Quit"),
         Binding("escape", "quit_app", "Quit"),
-        Binding("?", "show_help", "Help"),
+        Binding("question_mark", "show_help", "Help", key_display="?"),
     ]
     
     def __init__(self, config: KohaConfig, *args, **kwargs):
@@ -55,7 +55,11 @@ class MainMenuScreen(Screen):
     def compose(self) -> ComposeResult:
         """Compose the main menu layout."""
         # Header bar
-        yield Static(self._get_header_text(), id="header", classes="header-bar")
+        yield HeaderBar(
+            library_name=self.config.library_name,
+            opac_name="Dial Pac",
+            id="header"
+        )
         
         with Container(id="main-content"):
             # Welcome message
@@ -82,33 +86,10 @@ class MainMenuScreen(Screen):
                 )
         
         # Status bar
-        yield Static(self._get_status_text(), id="status-bar", classes="status-bar")
-    
-    def _get_header_text(self) -> str:
-        """Generate the header bar text."""
-        now = datetime.now()
-        date_str = now.strftime("%d %b %Y").upper()
-        time_str = now.strftime("%I:%M%p").lower()
-        
-        library_name = self.config.library_name.upper()
-        
-        # Pad to create a nice header layout
-        left = f"  {date_str}"
-        center = library_name
-        right = f"{time_str}  "
-        
-        # Calculate spacing (assuming 80 char width)
-        total_width = 80
-        left_space = (total_width - len(center)) // 2 - len(left)
-        right_space = total_width - len(left) - left_space - len(center) - len(right)
-        
-        return f"{left}{' ' * max(1, left_space)}{center}{' ' * max(1, right_space)}{right}\n{'Dial Pac':^80}"
-    
-    def _get_status_text(self) -> str:
-        """Generate the status bar text."""
-        return (
-            "Enter your selection(s) and press <Enter>:\n"
-            "S=Shortcut on, ?=Help"
+        yield FooterBar(
+            prompt="Enter your selection and press <Enter>:",
+            shortcuts="1-9,0=Select, ?=Help, Q=Quit",
+            id="status-bar"
         )
     
     def on_mount(self) -> None:
