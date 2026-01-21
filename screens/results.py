@@ -133,9 +133,9 @@ class SearchResultsScreen(Screen):
         )
         
         with Container(id="main-content"):
-            # Search info
+            # Search info with blank lines before and after
             yield Static(
-                f"Your Search: {self.search_query}",
+                f"\nYour Search: {self.search_query}\n",
                 id="search-info"
             )
             
@@ -152,7 +152,7 @@ class SearchResultsScreen(Screen):
             # Loading indicator
             yield LoadingIndicator(id="loading")
             
-            # Pagination info
+            # Pagination info with blank lines before and after
             yield Static("", id="pagination-info", classes="pagination-info")
         
         # Status bar
@@ -175,6 +175,42 @@ class SearchResultsScreen(Screen):
         self.query_one("#loading", LoadingIndicator).display = True
         self.query_one("#results-list", ListView).display = False
         self._load_results()
+        # Adjust list height after layout settles
+        self.set_timer(0.1, self._adjust_list_height)
+    
+    def on_resize(self, event) -> None:
+        """Handle terminal resize - adjust list height to show only complete items."""
+        # Reset to 1fr first, then adjust
+        try:
+            results_list = self.query_one("#results-list", ListView)
+            results_list.styles.height = "1fr"
+        except Exception:
+            pass
+        # Schedule height adjustment after layout
+        self.set_timer(0.1, self._adjust_list_height)
+    
+    def _adjust_list_height(self) -> None:
+        """Adjust the results list height to show only complete items."""
+        try:
+            results_list = self.query_one("#results-list", ListView)
+            # Get current height
+            current_height = results_list.size.height
+            if current_height <= 0:
+                return
+            
+            # Each item is 2 lines, or 3 if spaced
+            lines_per_item = 3 if self.config.result_spacing else 2
+            
+            # Calculate how many complete items fit
+            # Subtract 1 line to ensure no partial items ever show
+            complete_items = (current_height - 1) // lines_per_item
+            new_height = complete_items * lines_per_item
+            
+            # Set height to show only complete items
+            if new_height > 0:
+                results_list.styles.height = new_height
+        except Exception:
+            pass  # Ignore errors during resize
     
     @work(exclusive=True)
     async def _load_results(self) -> None:
@@ -241,11 +277,11 @@ class SearchResultsScreen(Screen):
         """Update the pagination display."""
         pagination = self.query_one("#pagination-info", Static)
         if total == 0:
-            pagination.update("No items found")
+            pagination.update("\nNo items found\n")
         elif total > shown:
-            pagination.update(f"** Too many results ({total}) - first {shown} shown - Use arrow keys to scroll **")
+            pagination.update(f"\n** Too many results ({total}) - first {shown} shown - Use arrow keys to scroll **\n")
         else:
-            pagination.update(f"** {total} Items - Use arrow keys to scroll **")
+            pagination.update(f"\n** {total} Items - Use arrow keys to scroll **\n")
     
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         """Handle result selection."""

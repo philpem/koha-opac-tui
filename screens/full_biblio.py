@@ -67,7 +67,7 @@ class FullBiblioScreen(Screen):
         lines = []
         
         # Title
-        lines.append(f"Title:       {record.title or 'Unknown Title'}")
+        lines.append(f"{'Title:':<13}{record.title or 'Unknown Title'}")
         lines.append("")
         
         # Author(s) - may be long with contributors
@@ -75,24 +75,24 @@ class FullBiblioScreen(Screen):
             # Split by | to show contributors on separate lines if long
             authors = record.author.split(" | ")
             if len(authors) == 1:
-                lines.append(f"Author:      {authors[0]}")
+                lines.append(f"{'Author:':<13}{authors[0]}")
             else:
-                lines.append(f"Author:      {authors[0]}")
+                lines.append(f"{'Author:':<13}{authors[0]}")
                 for contrib in authors[1:]:
-                    lines.append(f"Contributor: {contrib}")
+                    lines.append(f"{'Contributor:':<13}{contrib}")
         lines.append("")
         
         # Publication information
         if record.publisher:
-            lines.append(f"Publisher:   {record.publisher}")
+            lines.append(f"{'Publisher:':<13}{record.publisher}")
         if record.publication_year:
-            lines.append(f"Year:        {record.publication_year}")
+            lines.append(f"{'Year:':<13}{record.publication_year}")
         if record.publisher or record.publication_year:
             lines.append("")
         
         # ISBN
         if record.isbn:
-            lines.append(f"ISBN:        {record.isbn}")
+            lines.append(f"{'ISBN:':<13}{record.isbn}")
             lines.append("")
         
         # Call Numbers - use short label
@@ -101,30 +101,30 @@ class FullBiblioScreen(Screen):
         
         has_call_number = False
         if display_mode in ["both", "lcc"] and record.call_number_lcc:
-            lines.append(f"LOC {call_label}:   {record.call_number_lcc}")
+            lines.append(f"{'LOC ' + call_label + ':':<13}{record.call_number_lcc}")
             has_call_number = True
         if display_mode in ["both", "dewey"] and record.call_number_dewey:
-            lines.append(f"DDC {call_label}:   {record.call_number_dewey}")
+            lines.append(f"{'DDC ' + call_label + ':':<13}{record.call_number_dewey}")
             has_call_number = True
         if not has_call_number and record.call_number:
-            lines.append(f"{call_label}:       {record.call_number}")
+            lines.append(f"{call_label + ':':<13}{record.call_number}")
             has_call_number = True
         if has_call_number:
             lines.append("")
         
         # Edition
         if record.edition:
-            lines.append(f"Edition:     {record.edition}")
+            lines.append(f"{'Edition:':<13}{record.edition}")
             lines.append("")
         
         # Physical description
         if record.physical_description:
-            lines.append(f"Physical:    {record.physical_description}")
+            lines.append(f"{'Physical:':<13}{record.physical_description}")
             lines.append("")
         
         # Series
         if record.series:
-            lines.append(f"Series:      {record.series}")
+            lines.append(f"{'Series:':<13}{record.series}")
             lines.append("")
         
         # Subjects
@@ -136,7 +136,7 @@ class FullBiblioScreen(Screen):
         
         # Notes
         if record.notes:
-            lines.append(f"Notes:       {record.notes}")
+            lines.append(f"{'Notes:':<13}{record.notes}")
             lines.append("")
         
         # Summary - show full, wrapped
@@ -159,7 +159,7 @@ class FullBiblioScreen(Screen):
             lines.append("")
         
         # Record ID
-        lines.append(f"Record ID:   {record.biblio_id}")
+        lines.append(f"{'Record ID:':<13}{record.biblio_id}")
         
         return "\n".join(lines)
     

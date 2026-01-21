@@ -128,11 +128,11 @@ class HoldingDetailScreen(Screen):
         
         # Title
         title = self.record.title or "Unknown Title"
-        lines.append(f"Title:      {title}")
+        lines.append(f"{'Title:':<12}{title}")
         
         # Author
         if self.record.author:
-            lines.append(f"Author:     {self.record.author}")
+            lines.append(f"{'Author:':<12}{self.record.author}")
         
         # Publication info
         pub_parts = []
@@ -141,11 +141,11 @@ class HoldingDetailScreen(Screen):
         if self.record.publication_year:
             pub_parts.append(self.record.publication_year)
         if pub_parts:
-            lines.append(f"Published:  {', '.join(pub_parts)}")
+            lines.append(f"{'Published:':<12}{', '.join(pub_parts)}")
         
         # ISBN
         if self.record.isbn:
-            lines.append(f"ISBN:       {self.record.isbn}")
+            lines.append(f"{'ISBN:':<12}{self.record.isbn}")
         
         # Call Number(s) - combined on one line using short label
         call_label = self.config.get_call_number_label_short()
@@ -158,17 +158,17 @@ class HoldingDetailScreen(Screen):
             if self.record.call_number_dewey:
                 call_parts.append(f"DDC: {self.record.call_number_dewey}")
             if call_parts:
-                lines.append(f"{call_label}:      {' | '.join(call_parts)}")
+                lines.append(f"{call_label + ':':<12}{' | '.join(call_parts)}")
             elif self.record.call_number:
-                lines.append(f"{call_label}:      {self.record.call_number}")
+                lines.append(f"{call_label + ':':<12}{self.record.call_number}")
         elif display_mode == "lcc":
             cn = self.record.call_number_lcc or self.record.call_number
             if cn:
-                lines.append(f"{call_label}:      {cn}")
+                lines.append(f"{call_label + ':':<12}{cn}")
         elif display_mode == "dewey":
             cn = self.record.call_number_dewey or self.record.call_number
             if cn:
-                lines.append(f"{call_label}:      {cn}")
+                lines.append(f"{call_label + ':':<12}{cn}")
         
         return "\n".join(lines)
     
@@ -182,37 +182,37 @@ class HoldingDetailScreen(Screen):
         
         lines = []
         
-        # Library and Location - all values start at column 12
-        lines.append(f"Library:    {item.library_name or item.library_id}")
+        # All values start at column 12 using format width
+        lines.append(f"{'Library:':<12}{item.library_name or item.library_id}")
         if item.location:
-            lines.append(f"Location:   {item.location}")
+            lines.append(f"{'Location:':<12}{item.location}")
         
-        # Call Number - "Call#:" is 6 chars, need 4 spaces to reach column 12
+        # Call Number
         if item.call_number:
-            lines.append(f"{call_label}:      {item.call_number}")
+            lines.append(f"{call_label + ':':<12}{item.call_number}")
         
         # Copy Number
         if item.copy_number:
-            lines.append(f"Copy:       {item.copy_number}")
+            lines.append(f"{'Copy:':<12}{item.copy_number}")
         
         # Barcode
         if item.barcode:
-            lines.append(f"Barcode:    {item.barcode}")
+            lines.append(f"{'Barcode:':<12}{item.barcode}")
         
         # Item Type
         if item.item_type:
-            lines.append(f"Type:       {item.item_type}")
+            lines.append(f"{'Type:':<12}{item.item_type}")
         
         # Status
-        lines.append(f"Status:     {item.status}")
+        lines.append(f"{'Status:':<12}{item.status}")
         
         # Due Date (if on loan)
         if item.due_date:
-            lines.append(f"Due Date:   {item.due_date}")
+            lines.append(f"{'Due Date:':<12}{item.due_date}")
         
         # Public Note
         if item.public_note:
-            lines.append(f"Note:       {item.public_note}")
+            lines.append(f"{'Note:':<12}{item.public_note}")
         
         return "\n".join(lines)
     
