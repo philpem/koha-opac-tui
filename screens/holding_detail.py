@@ -178,41 +178,41 @@ class HoldingDetailScreen(Screen):
             return "Select an item to view details."
         
         item = self.selected_holding
-        call_label = self.config.get_call_number_label()
+        call_label = self.config.get_call_number_label_short()
         
         lines = []
         
-        # Library and Location
-        lines.append(f"Library:   {item.library_name or item.library_id}")
+        # Library and Location - all values start at column 12
+        lines.append(f"Library:    {item.library_name or item.library_id}")
         if item.location:
-            lines.append(f"Location:  {item.location}")
+            lines.append(f"Location:   {item.location}")
         
-        # Call Number
+        # Call Number - "Call#:" is 6 chars, need 4 spaces to reach column 12
         if item.call_number:
-            lines.append(f"{call_label}: {item.call_number}")
+            lines.append(f"{call_label}:      {item.call_number}")
         
         # Copy Number
         if item.copy_number:
-            lines.append(f"Copy:      {item.copy_number}")
+            lines.append(f"Copy:       {item.copy_number}")
         
         # Barcode
         if item.barcode:
-            lines.append(f"Barcode:   {item.barcode}")
+            lines.append(f"Barcode:    {item.barcode}")
         
         # Item Type
         if item.item_type:
-            lines.append(f"Type:      {item.item_type}")
+            lines.append(f"Type:       {item.item_type}")
         
         # Status
-        lines.append(f"Status:    {item.status}")
+        lines.append(f"Status:     {item.status}")
         
         # Due Date (if on loan)
         if item.due_date:
-            lines.append(f"Due Date:  {item.due_date}")
+            lines.append(f"Due Date:   {item.due_date}")
         
         # Public Note
         if item.public_note:
-            lines.append(f"Note:      {item.public_note}")
+            lines.append(f"Note:       {item.public_note}")
         
         return "\n".join(lines)
     

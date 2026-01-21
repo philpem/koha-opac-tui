@@ -99,6 +99,20 @@ class SettingsScreen(Screen):
                         id="callnum-label-shelfmark"
                     )
             
+            yield Static("Search Results Spacing:")
+            with Horizontal(id="spacing-row"):
+                with RadioSet(id="spacing-select"):
+                    yield RadioButton(
+                        "Compact",
+                        value=not self.config.result_spacing,
+                        id="spacing-compact"
+                    )
+                    yield RadioButton(
+                        "Spaced (blank line between)",
+                        value=self.config.result_spacing,
+                        id="spacing-spaced"
+                    )
+            
             with Horizontal(id="button-row"):
                 yield Button("Save", id="save-btn", variant="primary")
                 yield Button("Cancel", id="cancel-btn")
@@ -164,12 +178,20 @@ class SettingsScreen(Screen):
                 elif btn_id == "callnum-label-shelfmark":
                     call_number_label = "shelfmark"
             
+            # Get selected spacing option
+            result_spacing = self.config.result_spacing  # Default to current
+            spacing_set = self.query_one("#spacing-select", RadioSet)
+            if spacing_set.pressed_button:
+                btn_id = spacing_set.pressed_button.id
+                result_spacing = (btn_id == "spacing-spaced")
+            
             # Update config
             self.config.base_url = server_url
             self.config.library_name = library_name or "PUBLIC LIBRARY"
             self.config.theme = theme
             self.config.call_number_display = call_number_display
             self.config.call_number_label = call_number_label
+            self.config.result_spacing = result_spacing
             
             # Save to file
             self.config.save()

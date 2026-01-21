@@ -28,22 +28,27 @@ logger.setLevel(logging.DEBUG)
 class ResultItem(ListItem):
     """A search result list item."""
     
-    def __init__(self, index: int, record: BiblioRecord, *args, **kwargs):
+    # Line width for formatting (leaving room for margins/scrollbar)
+    LINE_WIDTH = 71
+    
+    def __init__(self, index: int, record: BiblioRecord, spaced: bool = False, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.index = index
         self.record = record
+        self.spaced = spaced
     
     def compose(self) -> ComposeResult:
-        # Format to fit 74 chars max (leaving room for margins/scrollbar)
         author = self.record.author or "Unknown"
-        # Truncate author if needed
-        if len(author) > 28:
-            author = author[:25] + "..."
+        # Truncate author if needed - leave room for index and year
+        max_author = self.LINE_WIDTH - 10  # "NNN. " (5) + "YEAR" (4) + space (1)
+        if len(author) > max_author:
+            author = author[:max_author - 3] + "..."
         
-        # Truncate title if too long  
         title = self.record.title
-        if len(title) > 40:
-            title = title[:37] + "..."
+        # Truncate title - leave room for indent
+        max_title = self.LINE_WIDTH - 5  # 5 char indent
+        if len(title) > max_title:
+            title = title[:max_title - 3] + "..."
         
         # Item type indicator (short)
         item_type = ""
@@ -57,19 +62,18 @@ class ResultItem(ListItem):
         if len(year) > 4:
             year = year[:4]
         
-        # Line 1: "  1. Author Name                    YEAR"
-        # Line 2: "      Title"
-        # Use 3 digits for item number, keep under 74 chars
-        line1 = f"{self.index:3d}. {author}"
+        # Format using fixed-width fields
+        # Line 1: "NNN. Author                                           YEAR"
+        # Line 2: "     Title"
+        author_width = self.LINE_WIDTH - 10  # room for "NNN. " and " YEAR"
+        line1 = f"{self.index:3d}. {author:<{author_width}} {year:>4}"
         line2 = f"     {item_type}{title}"
         
-        # Add year right-aligned, total max 72 chars
-        if year:
-            padding = 67 - len(line1)
-            if padding > 0:
-                line1 = line1 + " " * padding + year
+        content = f"{line1}\n{line2}"
+        if self.spaced:
+            content += "\n"  # Add blank line for spacing
         
-        yield Static(f"{line1}\n{line2}", classes="result-item-text")
+        yield Static(content, classes="result-item-text")
 
 
 class SearchResultsScreen(Screen):
@@ -82,10 +86,12 @@ class SearchResultsScreen(Screen):
         Binding("escape", "go_back", "Back"),
         Binding("b", "go_back", "Back", show=False),
         Binding("enter", "select_item", "Select", show=False),
-        Binding("n", "next_page", "Next Page"),
-        Binding("p", "prev_page", "Previous Page"),
-        Binding("pagedown", "next_page", "Next Page", show=False),
-        Binding("pageup", "prev_page", "Previous Page", show=False),
+        Binding("n", "next_page", "Next Page", show=False),
+        Binding("p", "prev_page", "Previous Page", show=False),
+        Binding("pagedown", "page_down", "Page Down", show=False),
+        Binding("pageup", "page_up", "Page Up", show=False),
+        Binding("home", "go_home", "Home", show=False),
+        Binding("end", "go_end", "End", show=False),
         Binding("f1", "show_help", "Help"),
         Binding("1", "select_1", show=False),
         Binding("2", "select_2", show=False),
@@ -157,8 +163,11 @@ class SearchResultsScreen(Screen):
         )
     
     def _get_column_header(self) -> str:
-        """Get the column header row - fits in 72 chars."""
-        return f"{'#':<4}{'AUTHOR / TITLE':<60}{'YEAR':>8}"
+        """Get the column header row - aligned with result items."""
+        # Match ResultItem.LINE_WIDTH = 71
+        # Format: "NNN. AUTHOR...                                        YEAR"
+        author_width = 71 - 10  # same as ResultItem
+        return f"{'#':>3}  {'AUTHOR / TITLE':<{author_width}} {'YEAR':>4}"
     
     def on_mount(self) -> None:
         """Start loading results when mounted."""
@@ -213,9 +222,10 @@ class SearchResultsScreen(Screen):
         logger.debug(f"Displaying {len(results.records)} results")
         self.results = results
         
-        # Add result items
+        # Add result items with optional spacing
+        spaced = self.config.result_spacing
         for i, record in enumerate(results.records, start=1):
-            results_list.append(ResultItem(i, record))
+            results_list.append(ResultItem(i, record, spaced=spaced))
         
         results_list.display = True
         results_list.focus()
@@ -260,21 +270,72 @@ class SearchResultsScreen(Screen):
         """Go back to search screen."""
         self.app.pop_screen()
     
+    def on_key(self, event) -> None:
+        """Handle key events - intercept before ListView processes them."""
+        if event.key == "pagedown":
+            self.action_page_down()
+            event.prevent_default()
+            event.stop()
+        elif event.key == "pageup":
+            self.action_page_up()
+            event.prevent_default()
+            event.stop()
+        elif event.key == "home":
+            self.action_go_home()
+            event.prevent_default()
+            event.stop()
+        elif event.key == "end":
+            self.action_go_end()
+            event.prevent_default()
+            event.stop()
+    
+    def _get_visible_items_count(self) -> int:
+        """Calculate how many items are visible based on list height."""
+        results_list = self.query_one("#results-list", ListView)
+        list_height = results_list.size.height
+        if list_height > 0:
+            # Each item is 2 lines (author + title), or 3 if spaced
+            lines_per_item = 3 if self.config.result_spacing else 2
+            return max(1, (list_height // lines_per_item) - 1)
+        return 5  # Default fallback
+    
+    def action_page_down(self) -> None:
+        """Move cursor down by a page worth of items."""
+        results_list = self.query_one("#results-list", ListView)
+        if results_list.children:
+            visible_count = self._get_visible_items_count()
+            current = results_list.index or 0
+            new_index = min(current + visible_count, len(results_list.children) - 1)
+            results_list.index = new_index
+    
+    def action_page_up(self) -> None:
+        """Move cursor up by a page worth of items."""
+        results_list = self.query_one("#results-list", ListView)
+        if results_list.children:
+            visible_count = self._get_visible_items_count()
+            current = results_list.index or 0
+            new_index = max(current - visible_count, 0)
+            results_list.index = new_index
+    
+    def action_go_home(self) -> None:
+        """Move cursor to the first item."""
+        results_list = self.query_one("#results-list", ListView)
+        if results_list.children:
+            results_list.index = 0
+    
+    def action_go_end(self) -> None:
+        """Move cursor to the last item."""
+        results_list = self.query_one("#results-list", ListView)
+        if results_list.children:
+            results_list.index = len(results_list.children) - 1
+    
     def action_next_page(self) -> None:
-        """Go to next page of results."""
-        if self.results and self.results.has_next and not self.is_loading:
-            self.current_page += 1
-            self.query_one("#loading", LoadingIndicator).display = True
-            self.query_one("#results-list", ListView).display = False
-            self._load_results()
+        """Go to next page of results (legacy - now same as page_down)."""
+        self.action_page_down()
     
     def action_prev_page(self) -> None:
-        """Go to previous page of results."""
-        if self.results and self.results.has_prev and not self.is_loading:
-            self.current_page -= 1
-            self.query_one("#loading", LoadingIndicator).display = True
-            self.query_one("#results-list", ListView).display = False
-            self._load_results()
+        """Go to previous page of results (legacy - now same as page_up)."""
+        self.action_page_up()
     
     def action_select_item(self) -> None:
         """Select the currently highlighted item."""

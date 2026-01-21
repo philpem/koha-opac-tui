@@ -32,6 +32,10 @@ class KohaConfig:
     library_name: str = "PUBLIC LIBRARY"
     items_per_page: int = 10
     
+    # Search results display
+    # Whether to add blank line between results for readability
+    result_spacing: bool = False
+    
     # Call number display settings
     # Options: "lcc" (LOC only), "dewey" (Dewey only), "both" (show both)
     call_number_display: str = "both"
