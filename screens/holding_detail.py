@@ -147,16 +147,19 @@ class HoldingDetailScreen(Screen):
         if self.record.isbn:
             lines.append(f"ISBN:      {self.record.isbn}")
         
-        # Call Number(s) based on display settings
+        # Call Number(s) - combined on one line
         call_label = self.config.get_call_number_label()
         display_mode = self.config.call_number_display
         
+        call_parts = []
         if display_mode == "both":
             if self.record.call_number_lcc:
-                lines.append(f"LOC {call_label}: {self.record.call_number_lcc}")
+                call_parts.append(f"LOC: {self.record.call_number_lcc}")
             if self.record.call_number_dewey:
-                lines.append(f"Dewey {call_label}: {self.record.call_number_dewey}")
-            if not self.record.call_number_lcc and not self.record.call_number_dewey and self.record.call_number:
+                call_parts.append(f"DDC: {self.record.call_number_dewey}")
+            if call_parts:
+                lines.append(f"{call_label}: {' | '.join(call_parts)}")
+            elif self.record.call_number:
                 lines.append(f"{call_label}: {self.record.call_number}")
         elif display_mode == "lcc":
             cn = self.record.call_number_lcc or self.record.call_number

@@ -30,6 +30,7 @@ from screens import (
     SearchResultsScreen,
     ItemDetailScreen,
     HoldingDetailScreen,
+    FullBiblioScreen,
     SettingsScreen,
     AboutScreen,
     HelpScreen,
@@ -146,12 +147,17 @@ class KohaOPACApp(App):
     }
     
     #holdings-table {
-        height: 1fr;
-        max-height: 10;
+        height: auto;
+        max-height: 6;
     }
     
     #holdings-summary {
         padding: 1;
+    }
+    
+    #biblio-scroll {
+        height: 1fr;
+        padding: 0 1;
     }
     
     Rule {
@@ -459,6 +465,12 @@ class KohaOPACApp(App):
                 record=params.get("record"),
                 holdings=params.get("holdings", []),
                 selected_holding=params.get("selected_holding"),
+            )
+        
+        elif name == "full_biblio":
+            return FullBiblioScreen(
+                self.config,
+                record=params.get("record"),
             )
         
         elif name == "settings":

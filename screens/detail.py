@@ -27,6 +27,7 @@ class ItemDetailScreen(Screen):
         Binding("b", "go_back", "Back", show=False),
         Binding("q", "go_back", "Back", show=False),
         Binding("enter", "select_holding", "View Holding"),
+        Binding("f", "show_full_biblio", "Full Details"),
         Binding("f1", "show_help", "Help"),
     ]
     
@@ -70,7 +71,7 @@ class ItemDetailScreen(Screen):
         # Status bar
         yield FooterBar(
             prompt="",
-            shortcuts="Enter=View Holding, F1=Help, Esc=Back",
+            shortcuts="Enter=View, F=Full Details, F1=Help, Esc=Back",
             id="status-bar"
         )
     
@@ -191,7 +192,7 @@ class ItemDetailScreen(Screen):
         title = record.title or "Unknown Title"
         lines.append(f"Title:     {title}")
         
-        # Author
+        # Author (may include contributors separated by |)
         if record.author:
             lines.append(f"Author:    {record.author}")
         
@@ -208,18 +209,19 @@ class ItemDetailScreen(Screen):
         if record.isbn:
             lines.append(f"ISBN:      {record.isbn}")
         
-        # Call Number(s) based on display settings
+        # Call Number(s) - combined on one line based on display settings
         call_label = self.config.get_call_number_label()
         display_mode = self.config.call_number_display
         
+        call_parts = []
         if display_mode == "both":
-            # Show both LOC and Dewey on separate lines if both exist
             if record.call_number_lcc:
-                lines.append(f"LOC {call_label}: {record.call_number_lcc}")
+                call_parts.append(f"LOC: {record.call_number_lcc}")
             if record.call_number_dewey:
-                lines.append(f"Dewey {call_label}: {record.call_number_dewey}")
-            # Fallback to generic call number if neither specific one exists
-            if not record.call_number_lcc and not record.call_number_dewey and record.call_number:
+                call_parts.append(f"DDC: {record.call_number_dewey}")
+            if call_parts:
+                lines.append(f"{call_label}: {' | '.join(call_parts)}")
+            elif record.call_number:
                 lines.append(f"{call_label}: {record.call_number}")
         elif display_mode == "lcc":
             cn = record.call_number_lcc or record.call_number
@@ -230,11 +232,23 @@ class ItemDetailScreen(Screen):
             if cn:
                 lines.append(f"{call_label}: {cn}")
         
-        # Summary - truncate if too long
+        # Edition
+        if record.edition:
+            lines.append(f"Edition:   {record.edition}")
+        
+        # Physical description
+        if record.physical_description:
+            lines.append(f"Physical:  {record.physical_description}")
+        
+        # Series
+        if record.series:
+            lines.append(f"Series:    {record.series}")
+        
+        # Summary - truncate if too long for compact view
         if record.summary:
             summary = record.summary
-            if len(summary) > 150:
-                summary = summary[:147] + "..."
+            if len(summary) > 120:
+                summary = summary[:117] + "..."
             lines.append(f"Summary:   {summary}")
         
         return "\n".join(lines)
@@ -263,6 +277,14 @@ class ItemDetailScreen(Screen):
                         "selected_holding": selected_holding,
                     }
                 )
+    
+    def action_show_full_biblio(self) -> None:
+        """Show full bibliographic details without holdings."""
+        if self.record:
+            self.app.push_screen(
+                "full_biblio",
+                {"record": self.record}
+            )
     
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
         """Handle double-click/enter on a row."""

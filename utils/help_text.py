@@ -112,14 +112,14 @@ The status bar shows total results and current page number.
 This screen shows detailed information about the selected item.
 
 UPPER SECTION - Bibliographic Details:
-  • Title and author
+  • Title and author (contributors shown with |)
   • Publication information
-  • ISBN and call number
-  • Physical description
-  • Summary (if available)
+  • ISBN and call numbers (LOC/Dewey on one line)
+  • Edition, physical description, series
+  • Summary (truncated - press F for full view)
 
 LOWER SECTION - Item Holdings:
-  Shows all copies of this item in the library system:
+  Shows copies of this item in the library system:
   
   Library        Which branch holds this copy
   Location       Where in the library (e.g., Adult Fiction)
@@ -128,12 +128,47 @@ LOWER SECTION - Item Holdings:
   Due Date       When an on-loan item is due back
   Note           Public notes about this copy
 
-SELECTING A HOLDING:
+COMMANDS:
+  Enter                View holding details for selected library
+  F                    View full bibliographic details (no holdings)
   Arrow Keys           Scroll through holdings table
-  Enter                View detailed information about selected holding
+  Esc                  Return to search results
+
+══════════════════════════════════════════════════════════════════════════════
+                         Press Esc to return
+══════════════════════════════════════════════════════════════════════════════
+"""
+    },
+    
+    "full_biblio": {
+        "title": "FULL BIBLIOGRAPHIC DETAILS HELP",
+        "content": """
+══════════════════════════════════════════════════════════════════════════════
+                     FULL BIBLIOGRAPHIC DETAILS HELP
+══════════════════════════════════════════════════════════════════════════════
+
+This screen shows the complete bibliographic record without the holdings table.
+
+INFORMATION DISPLAYED:
+  • Title - Full title including subtitle
+  • Author - Main author and all contributors
+  • Publisher - Place and name of publisher
+  • Year - Publication year
+  • ISBN - International Standard Book Number
+  • Call Numbers - LOC and/or Dewey classifications
+  • Edition - Edition statement
+  • Physical - Pages, dimensions, etc.
+  • Series - Series title if part of a series
+  • Subjects - Subject headings
+  • Notes - General notes
+  • Summary - Full summary/abstract
+  • Record ID - Internal bibliographic record number
+
+Use the arrow keys to scroll through long records.
 
 NAVIGATION:
-  Esc                  Return to search results
+  Arrow Keys           Scroll up/down
+  Esc                  Return to item details
 
 ══════════════════════════════════════════════════════════════════════════════
                          Press Esc to return

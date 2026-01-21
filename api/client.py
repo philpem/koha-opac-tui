@@ -207,18 +207,32 @@ class KohaAPIClient:
         search_type: str = "title",
         page: int = 1,
         per_page: int = 10,
+        fetch_full_details: bool = True,
     ) -> Tuple[Optional[SearchResult], Optional[str]]:
         """
         Search for bibliographic records.
         
-        Uses the OPAC CGI search endpoint which is the most reliable method
-        and uses the same search engine as the web OPAC.
+        Uses the OPAC CGI search endpoint to get biblio IDs, then fetches
+        full MARC details for each record via the API for accurate data.
         """
         logger.debug(f"search_biblios called with query='{query}', search_type='{search_type}'")
         
-        # Use the SVC/CGI search endpoint - most reliable for OPAC-style search
+        # Use the SVC/CGI search endpoint to get biblio IDs
         result, error = await self._search_via_svc(query, search_type, page, per_page)
         logger.debug(f"_search_via_svc returned: records={len(result.records) if result else 0}, error={error}")
+        
+        if result and result.records and fetch_full_details:
+            # Fetch full MARC details for each record
+            enriched_records = []
+            for basic_record in result.records:
+                full_record, rec_error = await self.get_biblio(basic_record.biblio_id)
+                if full_record:
+                    enriched_records.append(full_record)
+                else:
+                    # Fall back to basic record if API fails
+                    enriched_records.append(basic_record)
+            
+            return SearchResult(enriched_records, result.total_count, page, per_page), None
         
         if result and result.records:
             return result, None
@@ -521,6 +535,8 @@ class KohaAPIClient:
     
     def _parse_marc_in_json(self, biblio_id: int, data: Dict[str, Any]) -> BiblioRecord:
         """Parse MARC-in-JSON format into BiblioRecord."""
+        import re
+        
         # MARC-in-JSON has 'fields' array with MARC field objects
         fields = data.get("fields", [])
         
@@ -538,8 +554,23 @@ class KohaAPIClient:
                                 return sf[subfield]
             return ""
         
+        def get_combined_subfields(tag: str, subfield_codes: List[str]) -> str:
+            """Extract and combine multiple subfields from a MARC field."""
+            for field in fields:
+                if tag in field:
+                    field_data = field[tag]
+                    if isinstance(field_data, dict):
+                        subfields = field_data.get("subfields", [])
+                        parts = []
+                        for sf in subfields:
+                            for code in subfield_codes:
+                                if code in sf:
+                                    parts.append(sf[code])
+                        return " ".join(parts)
+            return ""
+        
         def get_all_subfields(tag: str, subfield: str = "a") -> List[str]:
-            """Extract all occurrences of a subfield."""
+            """Extract all occurrences of a subfield from all matching fields."""
             results = []
             for field in fields:
                 if tag in field:
@@ -551,29 +582,102 @@ class KohaAPIClient:
                                 results.append(sf[subfield])
             return results
         
+        def get_all_field_values(tag: str, subfield_codes: List[str]) -> List[str]:
+            """Get combined subfield values from all occurrences of a field."""
+            results = []
+            for field in fields:
+                if tag in field:
+                    field_data = field[tag]
+                    if isinstance(field_data, dict):
+                        subfields = field_data.get("subfields", [])
+                        parts = []
+                        for sf in subfields:
+                            for code in subfield_codes:
+                                if code in sf:
+                                    parts.append(sf[code])
+                        if parts:
+                            results.append(" ".join(parts))
+            return results
+        
         # Extract common MARC fields
-        # 245 = Title
+        # 245 = Title (subfields a, b, c for title, subtitle, statement of responsibility)
         title = get_field("245", "a")
         subtitle = get_field("245", "b")
         if subtitle:
-            title = f"{title} {subtitle}".strip()
+            # Clean up subtitle - remove leading punctuation
+            subtitle = subtitle.lstrip(" :;/")
+            title = f"{title}: {subtitle}".strip()
+        # Clean up title - remove trailing punctuation
+        title = re.sub(r'\s*[/:;]\s*$', '', title)
         
-        # 100/110 = Author
-        author = get_field("100", "a") or get_field("110", "a") or get_field("700", "a")
+        # 100 = Main author (personal name)
+        # 110 = Main author (corporate name)
+        main_author = get_field("100", "a") or get_field("110", "a")
+        main_author = main_author.rstrip(" ,.")
         
-        # 260/264 = Publication info
+        # 700 = Added entry - personal name (contributors, editors, etc.)
+        # 710 = Added entry - corporate name
+        contributors = []
+        for field in fields:
+            if "700" in field:
+                field_data = field["700"]
+                if isinstance(field_data, dict):
+                    subfields = field_data.get("subfields", [])
+                    name_parts = []
+                    dates = ""
+                    for sf in subfields:
+                        if "a" in sf:
+                            name_parts.append(sf["a"].rstrip(" ,."))
+                        if "d" in sf:
+                            dates = sf["d"].rstrip(" ,.")
+                    if name_parts:
+                        contributor = name_parts[0]
+                        if dates:
+                            contributor = f"{contributor} ({dates})"
+                        contributors.append(contributor)
+            if "710" in field:
+                field_data = field["710"]
+                if isinstance(field_data, dict):
+                    subfields = field_data.get("subfields", [])
+                    for sf in subfields:
+                        if "a" in sf:
+                            contributors.append(sf["a"].rstrip(" ,."))
+        
+        # Combine main author with contributors
+        if main_author and contributors:
+            author = main_author + " | " + " | ".join(contributors)
+        elif main_author:
+            author = main_author
+        elif contributors:
+            author = " | ".join(contributors)
+        else:
+            author = ""
+        
+        # 260 = Publication info (older records)
+        # 264 = Production, Publication, Distribution, Manufacture (newer RDA records)
         publisher = get_field("260", "b") or get_field("264", "b")
         pub_place = get_field("260", "a") or get_field("264", "a")
         pub_year = get_field("260", "c") or get_field("264", "c")
+        
+        # Clean up publisher - remove trailing punctuation
+        if publisher:
+            publisher = re.sub(r'[\s,;:]+$', '', publisher)
+        if pub_place:
+            pub_place = re.sub(r'[\s:;,]+$', '', pub_place)
+        
         # Clean up year - extract just digits
         if pub_year:
-            import re
             year_match = re.search(r'(\d{4})', pub_year)
             if year_match:
                 pub_year = year_match.group(1)
         
         # 020 = ISBN
         isbn = get_field("020", "a")
+        # Clean ISBN - take only the number part
+        if isbn:
+            isbn_match = re.match(r'[\dXx-]+', isbn)
+            if isbn_match:
+                isbn = isbn_match.group(0)
         
         # 050 = Library of Congress Classification
         call_number_lcc = get_field("050", "a")
@@ -595,7 +699,13 @@ class KohaAPIClient:
         call_number = call_number_lcc or call_number_dewey
         
         # 300 = Physical description
-        physical_desc = get_field("300", "a")
+        physical_desc = get_combined_subfields("300", ["a", "b", "c"])
+        
+        # 490/830 = Series
+        series = get_field("490", "a") or get_field("830", "a")
+        
+        # 500 = General notes
+        notes = get_field("500", "a")
         
         # 520 = Summary
         summary = get_field("520", "a")
@@ -603,19 +713,22 @@ class KohaAPIClient:
         # 650 = Subjects
         subjects = get_all_subfields("650", "a")
         
+        # 250 = Edition
+        edition = get_field("250", "a")
+        
         # Combine publisher info
         full_publisher = ""
         if pub_place:
-            full_publisher = pub_place.rstrip(" :,")
+            full_publisher = pub_place
         if publisher:
             if full_publisher:
                 full_publisher += ": "
-            full_publisher += publisher.rstrip(" ,")
+            full_publisher += publisher
         
         return BiblioRecord(
             biblio_id=biblio_id,
-            title=title.rstrip(" /") or f"Record #{biblio_id}",
-            author=author.rstrip(" ,"),
+            title=title or f"Record #{biblio_id}",
+            author=author,
             publication_year=pub_year,
             publisher=full_publisher,
             isbn=isbn,
@@ -625,6 +738,9 @@ class KohaAPIClient:
             physical_description=physical_desc,
             summary=summary,
             subjects=subjects,
+            notes=notes,
+            edition=edition,
+            series=series,
             raw_data=data,
         )
     
