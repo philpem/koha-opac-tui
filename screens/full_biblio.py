@@ -95,19 +95,19 @@ class FullBiblioScreen(Screen):
             lines.append(f"ISBN:        {record.isbn}")
             lines.append("")
         
-        # Call Numbers
-        call_label = self.config.get_call_number_label()
+        # Call Numbers - use short label
+        call_label = self.config.get_call_number_label_short()
         display_mode = self.config.call_number_display
         
         has_call_number = False
         if display_mode in ["both", "lcc"] and record.call_number_lcc:
-            lines.append(f"LOC {call_label}:  {record.call_number_lcc}")
+            lines.append(f"LOC {call_label}:   {record.call_number_lcc}")
             has_call_number = True
         if display_mode in ["both", "dewey"] and record.call_number_dewey:
-            lines.append(f"DDC {call_label}:  {record.call_number_dewey}")
+            lines.append(f"DDC {call_label}:   {record.call_number_dewey}")
             has_call_number = True
         if not has_call_number and record.call_number:
-            lines.append(f"{call_label}:  {record.call_number}")
+            lines.append(f"{call_label}:       {record.call_number}")
             has_call_number = True
         if has_call_number:
             lines.append("")

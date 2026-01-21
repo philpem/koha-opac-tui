@@ -190,11 +190,11 @@ class ItemDetailScreen(Screen):
         
         # Title (prominent) - may wrap
         title = record.title or "Unknown Title"
-        lines.append(f"Title:     {title}")
+        lines.append(f"Title:      {title}")
         
         # Author (may include contributors separated by |)
         if record.author:
-            lines.append(f"Author:    {record.author}")
+            lines.append(f"Author:     {record.author}")
         
         # Publication info on one line
         pub_parts = []
@@ -203,14 +203,15 @@ class ItemDetailScreen(Screen):
         if record.publication_year:
             pub_parts.append(record.publication_year)
         if pub_parts:
-            lines.append(f"Published: {', '.join(pub_parts)}")
+            lines.append(f"Published:  {', '.join(pub_parts)}")
         
         # ISBN on its own line if it exists
         if record.isbn:
-            lines.append(f"ISBN:      {record.isbn}")
+            lines.append(f"ISBN:       {record.isbn}")
         
         # Call Number(s) - combined on one line based on display settings
-        call_label = self.config.get_call_number_label()
+        # Use short label "Call#" to align with other fields
+        call_label = self.config.get_call_number_label_short()
         display_mode = self.config.call_number_display
         
         call_parts = []
@@ -220,36 +221,43 @@ class ItemDetailScreen(Screen):
             if record.call_number_dewey:
                 call_parts.append(f"DDC: {record.call_number_dewey}")
             if call_parts:
-                lines.append(f"{call_label}: {' | '.join(call_parts)}")
+                lines.append(f"{call_label}:      {' | '.join(call_parts)}")
             elif record.call_number:
-                lines.append(f"{call_label}: {record.call_number}")
+                lines.append(f"{call_label}:      {record.call_number}")
         elif display_mode == "lcc":
             cn = record.call_number_lcc or record.call_number
             if cn:
-                lines.append(f"{call_label}: {cn}")
+                lines.append(f"{call_label}:      {cn}")
         elif display_mode == "dewey":
             cn = record.call_number_dewey or record.call_number
             if cn:
-                lines.append(f"{call_label}: {cn}")
+                lines.append(f"{call_label}:      {cn}")
         
         # Edition
         if record.edition:
-            lines.append(f"Edition:   {record.edition}")
+            lines.append(f"Edition:    {record.edition}")
         
         # Physical description
         if record.physical_description:
-            lines.append(f"Physical:  {record.physical_description}")
+            lines.append(f"Physical:   {record.physical_description}")
         
         # Series
         if record.series:
-            lines.append(f"Series:    {record.series}")
+            lines.append(f"Series:     {record.series}")
+        
+        # Subjects
+        if record.subjects:
+            subjects_str = "; ".join(record.subjects[:3])  # First 3 subjects
+            if len(record.subjects) > 3:
+                subjects_str += "..."
+            lines.append(f"Subjects:   {subjects_str}")
         
         # Summary - truncate if too long for compact view
         if record.summary:
             summary = record.summary
             if len(summary) > 120:
                 summary = summary[:117] + "..."
-            lines.append(f"Summary:   {summary}")
+            lines.append(f"Summary:    {summary}")
         
         return "\n".join(lines)
     

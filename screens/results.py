@@ -57,15 +57,15 @@ class ResultItem(ListItem):
         if len(year) > 4:
             year = year[:4]
         
-        # Line 1: "1. Author Name                    YEAR"
-        # Line 2: "    Title"
-        # Keep under 74 chars
-        line1 = f"{self.index:2d}. {author}"
-        line2 = f"    {item_type}{title}"
+        # Line 1: "  1. Author Name                    YEAR"
+        # Line 2: "      Title"
+        # Use 3 digits for item number, keep under 74 chars
+        line1 = f"{self.index:3d}. {author}"
+        line2 = f"     {item_type}{title}"
         
         # Add year right-aligned, total max 72 chars
         if year:
-            padding = 68 - len(line1)
+            padding = 67 - len(line1)
             if padding > 0:
                 line1 = line1 + " " * padding + year
         
@@ -232,6 +232,8 @@ class SearchResultsScreen(Screen):
         pagination = self.query_one("#pagination-info", Static)
         if total == 0:
             pagination.update("No items found")
+        elif total > shown:
+            pagination.update(f"** Too many results ({total}) - first {shown} shown - Use arrow keys to scroll **")
         else:
             pagination.update(f"** {total} Items - Use arrow keys to scroll **")
     

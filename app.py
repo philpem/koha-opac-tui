@@ -61,7 +61,7 @@ class KohaOPACApp(App):
     
     #main-content {
         height: 1fr;
-        padding: 0 1;
+        padding: 0 2;
     }
     
     #status-bar {
@@ -76,7 +76,7 @@ class KohaOPACApp(App):
     }
     
     #menu-container {
-        margin: 1 4;
+        margin: 1 2;
     }
     
     #main-menu {
@@ -90,13 +90,13 @@ class KohaOPACApp(App):
     }
     
     #examples-box {
-        margin: 1 4;
+        margin: 1 2;
         height: auto;
     }
     
     #input-area {
         height: auto;
-        padding: 0 1;
+        padding: 0 0;
     }
     
     #search-input {
@@ -105,17 +105,17 @@ class KohaOPACApp(App):
     }
     
     #search-info {
-        padding: 0 1;
+        padding: 0 0;
         text-style: italic;
     }
     
     #column-header {
-        padding: 0 1;
+        padding: 0 0;
     }
     
     #results-list {
         height: 1fr;
-        margin: 0 1;
+        margin: 0 0;
     }
     
     #pagination-info {
@@ -133,31 +133,43 @@ class KohaOPACApp(App):
     }
     
     #biblio-section {
-        height: 1fr;
-        max-height: 50%;
+        height: auto;
+    }
+    
+    #biblio-details {
+        padding: 0 0;
     }
     
     #detail-container {
-        margin: 0 2;
+        margin: 0 0;
     }
     
     #holdings-section {
-        height: 1fr;
-        padding: 0 2;
+        height: auto;
+        padding: 0 0;
+    }
+    
+    #holdings-title {
+        margin-top: 1;
     }
     
     #holdings-table {
         height: auto;
-        max-height: 6;
+        max-height: 5;
     }
     
     #holdings-summary {
-        padding: 1;
+        padding: 0 0;
     }
     
     #biblio-scroll {
         height: 1fr;
-        padding: 0 1;
+        padding: 0 0;
+    }
+    
+    #holding-scroll {
+        height: 1fr;
+        padding: 0 0;
     }
     
     Rule {
@@ -230,16 +242,20 @@ class KohaOPACApp(App):
     /* Holding detail screen */
     #holding-scroll {
         height: 1fr;
-        padding: 0 1;
+        padding: 0 0;
     }
     
     #library-title {
         text-style: bold;
-        padding: 1 0;
+        padding: 1 0 0 0;
+    }
+    
+    #item-title {
+        padding: 1 0 0 0;
     }
     
     #item-details {
-        padding: 0 0 1 0;
+        padding: 0 0;
     }
     """
     

@@ -128,11 +128,11 @@ class HoldingDetailScreen(Screen):
         
         # Title
         title = self.record.title or "Unknown Title"
-        lines.append(f"Title:     {title}")
+        lines.append(f"Title:      {title}")
         
         # Author
         if self.record.author:
-            lines.append(f"Author:    {self.record.author}")
+            lines.append(f"Author:     {self.record.author}")
         
         # Publication info
         pub_parts = []
@@ -141,14 +141,14 @@ class HoldingDetailScreen(Screen):
         if self.record.publication_year:
             pub_parts.append(self.record.publication_year)
         if pub_parts:
-            lines.append(f"Published: {', '.join(pub_parts)}")
+            lines.append(f"Published:  {', '.join(pub_parts)}")
         
         # ISBN
         if self.record.isbn:
-            lines.append(f"ISBN:      {self.record.isbn}")
+            lines.append(f"ISBN:       {self.record.isbn}")
         
-        # Call Number(s) - combined on one line
-        call_label = self.config.get_call_number_label()
+        # Call Number(s) - combined on one line using short label
+        call_label = self.config.get_call_number_label_short()
         display_mode = self.config.call_number_display
         
         call_parts = []
@@ -158,17 +158,17 @@ class HoldingDetailScreen(Screen):
             if self.record.call_number_dewey:
                 call_parts.append(f"DDC: {self.record.call_number_dewey}")
             if call_parts:
-                lines.append(f"{call_label}: {' | '.join(call_parts)}")
+                lines.append(f"{call_label}:      {' | '.join(call_parts)}")
             elif self.record.call_number:
-                lines.append(f"{call_label}: {self.record.call_number}")
+                lines.append(f"{call_label}:      {self.record.call_number}")
         elif display_mode == "lcc":
             cn = self.record.call_number_lcc or self.record.call_number
             if cn:
-                lines.append(f"{call_label}: {cn}")
+                lines.append(f"{call_label}:      {cn}")
         elif display_mode == "dewey":
             cn = self.record.call_number_dewey or self.record.call_number
             if cn:
-                lines.append(f"{call_label}: {cn}")
+                lines.append(f"{call_label}:      {cn}")
         
         return "\n".join(lines)
     
