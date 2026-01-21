@@ -66,6 +66,39 @@ class SettingsScreen(Screen):
                             id=f"theme-{theme_id}"
                         )
             
+            yield Static("Call Number Display:")
+            with Horizontal(id="callnum-display-row"):
+                with RadioSet(id="callnum-display-select"):
+                    yield RadioButton(
+                        "Both (LOC & Dewey)",
+                        value=self.config.call_number_display == "both",
+                        id="callnum-display-both"
+                    )
+                    yield RadioButton(
+                        "LOC Only",
+                        value=self.config.call_number_display == "lcc",
+                        id="callnum-display-lcc"
+                    )
+                    yield RadioButton(
+                        "Dewey Only",
+                        value=self.config.call_number_display == "dewey",
+                        id="callnum-display-dewey"
+                    )
+            
+            yield Static("Call Number Terminology:")
+            with Horizontal(id="callnum-label-row"):
+                with RadioSet(id="callnum-label-select"):
+                    yield RadioButton(
+                        "Call Number",
+                        value=self.config.call_number_label == "callnumber",
+                        id="callnum-label-callnumber"
+                    )
+                    yield RadioButton(
+                        "Shelfmark",
+                        value=self.config.call_number_label == "shelfmark",
+                        id="callnum-label-shelfmark"
+                    )
+            
             with Horizontal(id="button-row"):
                 yield Button("Save", id="save-btn", variant="primary")
                 yield Button("Cancel", id="cancel-btn")
@@ -109,10 +142,34 @@ class SettingsScreen(Screen):
                 if theme_id and theme_id.startswith("theme-"):
                     theme = theme_id.replace("theme-", "")
             
+            # Get selected call number display mode
+            call_number_display = self.config.call_number_display  # Default to current
+            callnum_display_set = self.query_one("#callnum-display-select", RadioSet)
+            if callnum_display_set.pressed_button:
+                btn_id = callnum_display_set.pressed_button.id
+                if btn_id == "callnum-display-both":
+                    call_number_display = "both"
+                elif btn_id == "callnum-display-lcc":
+                    call_number_display = "lcc"
+                elif btn_id == "callnum-display-dewey":
+                    call_number_display = "dewey"
+            
+            # Get selected call number terminology
+            call_number_label = self.config.call_number_label  # Default to current
+            callnum_label_set = self.query_one("#callnum-label-select", RadioSet)
+            if callnum_label_set.pressed_button:
+                btn_id = callnum_label_set.pressed_button.id
+                if btn_id == "callnum-label-callnumber":
+                    call_number_label = "callnumber"
+                elif btn_id == "callnum-label-shelfmark":
+                    call_number_label = "shelfmark"
+            
             # Update config
             self.config.base_url = server_url
             self.config.library_name = library_name or "PUBLIC LIBRARY"
             self.config.theme = theme
+            self.config.call_number_display = call_number_display
+            self.config.call_number_label = call_number_label
             
             # Save to file
             self.config.save()

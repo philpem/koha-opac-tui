@@ -32,11 +32,29 @@ class KohaConfig:
     library_name: str = "PUBLIC LIBRARY"
     items_per_page: int = 10
     
+    # Call number display settings
+    # Options: "lcc" (LOC only), "dewey" (Dewey only), "both" (show both)
+    call_number_display: str = "both"
+    # Terminology: "callnumber" or "shelfmark"
+    call_number_label: str = "callnumber"
+    
     # Demo mode - use mock data instead of real API
     demo_mode: bool = False
     
     # Timeout settings
     request_timeout: int = 30
+    
+    def get_call_number_label(self) -> str:
+        """Get the label to use for call numbers based on settings."""
+        if self.call_number_label == "shelfmark":
+            return "Shelfmark"
+        return "Call Number"
+    
+    def get_call_number_label_short(self) -> str:
+        """Get the short label for call numbers (for table columns)."""
+        if self.call_number_label == "shelfmark":
+            return "Shelfmark"
+        return "Call#"
     
     @property
     def public_api_url(self) -> str:

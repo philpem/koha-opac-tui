@@ -33,7 +33,9 @@ class BiblioRecord:
     publisher: str = ""
     isbn: str = ""
     item_type: str = ""
-    call_number: str = ""
+    call_number: str = ""  # Kept for backward compatibility
+    call_number_lcc: str = ""  # Library of Congress Classification (050)
+    call_number_dewey: str = ""  # Dewey Decimal Classification (082)
     subjects: List[str] = field(default_factory=list)
     notes: str = ""
     edition: str = ""
@@ -41,6 +43,29 @@ class BiblioRecord:
     series: str = ""
     summary: str = ""
     raw_data: Dict[str, Any] = field(default_factory=dict)
+    
+    def get_call_number(self, display_mode: str = "both") -> str:
+        """Get call number based on display mode setting.
+        
+        Args:
+            display_mode: "lcc" for LOC only, "dewey" for Dewey only, "both" for both
+        
+        Returns:
+            Formatted call number string
+        """
+        if display_mode == "lcc":
+            return self.call_number_lcc or self.call_number or ""
+        elif display_mode == "dewey":
+            return self.call_number_dewey or self.call_number or ""
+        else:  # "both"
+            parts = []
+            if self.call_number_lcc:
+                parts.append(f"LOC: {self.call_number_lcc}")
+            if self.call_number_dewey:
+                parts.append(f"DDC: {self.call_number_dewey}")
+            if parts:
+                return " | ".join(parts)
+            return self.call_number or ""
 
 
 @dataclass
@@ -58,6 +83,7 @@ class HoldingItem:
     due_date: Optional[str] = None
     item_type: str = ""
     notes: str = ""
+    public_note: str = ""  # Public note for the item
 
 
 @dataclass
@@ -185,23 +211,15 @@ class KohaAPIClient:
         """
         Search for bibliographic records.
         
-        Koha 25.x may use different endpoints. We try multiple approaches:
-        1. /public/biblios with query params (newer Koha)
-        2. /biblios with public access (if enabled)
-        3. SVC bib search (traditional OPAC search)
+        Uses the OPAC CGI search endpoint which is the most reliable method
+        and uses the same search engine as the web OPAC.
         """
         logger.debug(f"search_biblios called with query='{query}', search_type='{search_type}'")
         
-        # First, try the SVC search endpoint (most reliable for OPAC-style search)
-        # This uses the same search engine as the web OPAC
+        # Use the SVC/CGI search endpoint - most reliable for OPAC-style search
         result, error = await self._search_via_svc(query, search_type, page, per_page)
         logger.debug(f"_search_via_svc returned: records={len(result.records) if result else 0}, error={error}")
-        if result and result.records:
-            return result, None
         
-        # Try public biblios endpoint with simple query
-        result, error = await self._search_via_public_api(query, search_type, page, per_page)
-        logger.debug(f"_search_via_public_api returned: records={len(result.records) if result else 0}, error={error}")
         if result and result.records:
             return result, None
         
@@ -555,8 +573,24 @@ class KohaAPIClient:
         # 020 = ISBN
         isbn = get_field("020", "a")
         
-        # 050/082/090 = Call number
-        call_number = get_field("050", "a") or get_field("082", "a") or get_field("090", "a")
+        # 050 = Library of Congress Classification
+        call_number_lcc = get_field("050", "a")
+        lcc_cutter = get_field("050", "b")
+        if lcc_cutter:
+            call_number_lcc = f"{call_number_lcc} {lcc_cutter}".strip()
+        
+        # 082 = Dewey Decimal Classification
+        call_number_dewey = get_field("082", "a")
+        
+        # 090 = Local call number (fallback for LOC)
+        if not call_number_lcc:
+            call_number_lcc = get_field("090", "a")
+            lcc_cutter_90 = get_field("090", "b")
+            if lcc_cutter_90:
+                call_number_lcc = f"{call_number_lcc} {lcc_cutter_90}".strip()
+        
+        # Combined call number for backward compatibility
+        call_number = call_number_lcc or call_number_dewey
         
         # 300 = Physical description
         physical_desc = get_field("300", "a")
@@ -584,6 +618,8 @@ class KohaAPIClient:
             publisher=full_publisher,
             isbn=isbn,
             call_number=call_number,
+            call_number_lcc=call_number_lcc,
+            call_number_dewey=call_number_dewey,
             physical_description=physical_desc,
             summary=summary,
             subjects=subjects,
@@ -782,6 +818,7 @@ class KohaAPIClient:
             due_date=data.get("due_date"),
             item_type=data.get("item_type_id", ""),
             notes=data.get("public_note", ""),
+            public_note=data.get("public_note", ""),
         )
 
 

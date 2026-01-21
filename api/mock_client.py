@@ -21,7 +21,9 @@ SAMPLE_BOOKS = [
         "publisher": "Charles Scribner's Sons",
         "isbn": "9780684803357",
         "item_type": "Book",
-        "call_number": "813.52 HEM",
+        "call_number": "PS3515.E37 F6",
+        "call_number_lcc": "PS3515.E37 F6",
+        "call_number_dewey": "813.52",
         "summary": "A young American in the International Brigades during the Spanish Civil War.",
     },
     {
@@ -32,7 +34,9 @@ SAMPLE_BOOKS = [
         "publisher": "Scribner",
         "isbn": "9780684842714",
         "item_type": "Book",
-        "call_number": "813.52 HEM",
+        "call_number": "PS3515.E37 T78",
+        "call_number_lcc": "PS3515.E37 T78",
+        "call_number_dewey": "813.52",
         "summary": "A fictionalized memoir of an African safari.",
     },
     {
@@ -43,7 +47,9 @@ SAMPLE_BOOKS = [
         "publisher": "Charles Scribner's Sons",
         "isbn": "9780684801223",
         "item_type": "sound recording",
-        "call_number": "813.52 HEM",
+        "call_number": "PS3515.E37 O4",
+        "call_number_lcc": "PS3515.E37 O4",
+        "call_number_dewey": "813.52",
         "summary": "The story of an aging Cuban fisherman and his epic battle with a giant marlin.",
     },
     {
@@ -54,7 +60,9 @@ SAMPLE_BOOKS = [
         "publisher": "Charles Scribner's Sons",
         "isbn": "9780684824994",
         "item_type": "Book",
-        "call_number": "813.52 HEM",
+        "call_number": "PS3515.E37 Z523",
+        "call_number_lcc": "PS3515.E37 Z523",
+        "call_number_dewey": "813.52",
         "summary": "A memoir of Paris in the 1920s.",
     },
     {
@@ -65,7 +73,9 @@ SAMPLE_BOOKS = [
         "publisher": "Gnome Press",
         "isbn": "9780553293357",
         "item_type": "Book",
-        "call_number": "813.54 ASI",
+        "call_number": "PS3551.S5 F6",
+        "call_number_lcc": "PS3551.S5 F6",
+        "call_number_dewey": "813.54",
         "summary": "The first novel in Asimov's classic science fiction masterpiece.",
     },
     {
@@ -76,7 +86,9 @@ SAMPLE_BOOKS = [
         "publisher": "Gnome Press",
         "isbn": "9780553294385",
         "item_type": "Book",
-        "call_number": "813.54 ASI",
+        "call_number": "PS3551.S5 I2",
+        "call_number_lcc": "PS3551.S5 I2",
+        "call_number_dewey": "813.54",
         "summary": "A collection of nine science fiction short stories about robots.",
     },
     {
@@ -87,7 +99,9 @@ SAMPLE_BOOKS = [
         "publisher": "Charles Scribner's Sons",
         "isbn": "9780743273565",
         "item_type": "Book",
-        "call_number": "813.52 FIT",
+        "call_number": "PS3511.I9 G7",
+        "call_number_lcc": "PS3511.I9 G7",
+        "call_number_dewey": "813.52",
         "summary": "A portrait of the Jazz Age in all of its decadence and excess.",
     },
     {
@@ -98,7 +112,9 @@ SAMPLE_BOOKS = [
         "publisher": "J. B. Lippincott & Co.",
         "isbn": "9780061120084",
         "item_type": "Book",
-        "call_number": "813.54 LEE",
+        "call_number": "PS3562.E353 T6",
+        "call_number_lcc": "PS3562.E353 T6",
+        "call_number_dewey": "813.54",
         "summary": "A novel about racial injustice and the loss of innocence in the American South.",
     },
     {
@@ -109,7 +125,9 @@ SAMPLE_BOOKS = [
         "publisher": "Secker & Warburg",
         "isbn": "9780451524935",
         "item_type": "Book",
-        "call_number": "823.912 ORW",
+        "call_number": "PR6029.R8 N5",
+        "call_number_lcc": "PR6029.R8 N5",
+        "call_number_dewey": "823.912",
         "summary": "A dystopian novel set in a totalitarian society.",
     },
     {
@@ -120,7 +138,9 @@ SAMPLE_BOOKS = [
         "publisher": "T. Egerton",
         "isbn": "9780141439518",
         "item_type": "Book",
-        "call_number": "823.7 AUS",
+        "call_number": "PR4034 .P7",
+        "call_number_lcc": "PR4034 .P7",
+        "call_number_dewey": "823.7",
         "summary": "A romantic novel following the character development of Elizabeth Bennet.",
     },
     {
@@ -131,7 +151,9 @@ SAMPLE_BOOKS = [
         "publisher": "Little, Brown and Company",
         "isbn": "9780316769488",
         "item_type": "Book",
-        "call_number": "813.54 SAL",
+        "call_number": "PS3537.A426 C3",
+        "call_number_lcc": "PS3537.A426 C3",
+        "call_number_dewey": "813.54",
         "summary": "A novel about teenage alienation and loss of innocence.",
     },
     {
@@ -142,7 +164,9 @@ SAMPLE_BOOKS = [
         "publisher": "Harper & Row",
         "isbn": "9780060883287",
         "item_type": "Book",
-        "call_number": "863.64 GAR",
+        "call_number": "PQ8180.17.A73 C513",
+        "call_number_lcc": "PQ8180.17.A73 C513",
+        "call_number_dewey": "863.64",
         "summary": "A landmark novel telling the multi-generational story of the Buendía family.",
     },
     {
@@ -153,7 +177,9 @@ SAMPLE_BOOKS = [
         "publisher": "Bloomsbury",
         "isbn": "9780747532699",
         "item_type": "Book",
-        "call_number": "823.914 ROW",
+        "call_number": "PR6068.O93 H37",
+        "call_number_lcc": "PR6068.O93 H37",
+        "call_number_dewey": "823.914",
         "summary": "The first book in the Harry Potter fantasy series.",
     },
     {
@@ -164,7 +190,9 @@ SAMPLE_BOOKS = [
         "publisher": "George Allen & Unwin",
         "isbn": "9780547928227",
         "item_type": "Book",
-        "call_number": "823.912 TOL",
+        "call_number": "PR6039.O32 H6",
+        "call_number_lcc": "PR6039.O32 H6",
+        "call_number_dewey": "823.912",
         "summary": "A fantasy novel about the adventures of hobbit Bilbo Baggins.",
     },
     {
@@ -175,7 +203,9 @@ SAMPLE_BOOKS = [
         "publisher": "George Allen & Unwin",
         "isbn": "9780618640157",
         "item_type": "Book",
-        "call_number": "823.912 TOL",
+        "call_number": "PR6039.O32 L6",
+        "call_number_lcc": "PR6039.O32 L6",
+        "call_number_dewey": "823.912",
         "summary": "An epic high-fantasy novel following the quest to destroy the One Ring.",
     },
     {
@@ -186,7 +216,9 @@ SAMPLE_BOOKS = [
         "publisher": "Franklin, Beedle & Associates",
         "isbn": "9781590282755",
         "item_type": "Book",
-        "call_number": "005.133 ZEL",
+        "call_number": "QA76.73.P98 Z45",
+        "call_number_lcc": "QA76.73.P98 Z45",
+        "call_number_dewey": "005.133",
         "summary": "A textbook designed for a first course in computer science using Python.",
     },
     {
@@ -197,7 +229,9 @@ SAMPLE_BOOKS = [
         "publisher": "Prentice Hall",
         "isbn": "9780132350884",
         "item_type": "Book",
-        "call_number": "005.1 MAR",
+        "call_number": "QA76.76.D47 M38",
+        "call_number_lcc": "QA76.76.D47 M38",
+        "call_number_dewey": "005.1",
         "summary": "A guide to writing clean, readable, and maintainable code.",
     },
     {
@@ -208,7 +242,9 @@ SAMPLE_BOOKS = [
         "publisher": "Charles Scribner's Sons",
         "isbn": "9780743297332",
         "item_type": "Book",
-        "call_number": "813.52 HEM",
+        "call_number": "PS3515.E37 S8",
+        "call_number_lcc": "PS3515.E37 S8",
+        "call_number_dewey": "813.52",
         "summary": "A novel about a group of American and British expatriates in Paris and Spain.",
     },
     {
@@ -219,7 +255,9 @@ SAMPLE_BOOKS = [
         "publisher": "Charles Scribner's Sons",
         "isbn": "9780684801469",
         "item_type": "Book",
-        "call_number": "813.52 HEM",
+        "call_number": "PS3515.E37 F3",
+        "call_number_lcc": "PS3515.E37 F3",
+        "call_number_dewey": "813.52",
         "summary": "A novel set during World War I about an American ambulance driver and an English nurse.",
     },
     {
@@ -230,7 +268,9 @@ SAMPLE_BOOKS = [
         "publisher": "The Viking Press",
         "isbn": "9780143039433",
         "item_type": "Book",
-        "call_number": "813.52 STE",
+        "call_number": "PS3537.T3234 G8",
+        "call_number_lcc": "PS3537.T3234 G8",
+        "call_number_dewey": "813.52",
         "summary": "A novel about the Joad family's migration from Oklahoma to California during the Dust Bowl.",
     },
 ]
@@ -333,6 +373,8 @@ class MockKohaAPIClient:
                 isbn=book["isbn"],
                 item_type=book["item_type"],
                 call_number=book["call_number"],
+                call_number_lcc=book.get("call_number_lcc", ""),
+                call_number_dewey=book.get("call_number_dewey", ""),
                 summary=book.get("summary", ""),
                 raw_data=book,
             ))
@@ -354,6 +396,8 @@ class MockKohaAPIClient:
                     isbn=book["isbn"],
                     item_type=book["item_type"],
                     call_number=book["call_number"],
+                    call_number_lcc=book.get("call_number_lcc", ""),
+                    call_number_dewey=book.get("call_number_dewey", ""),
                     summary=book.get("summary", ""),
                     raw_data=book,
                 ), None
@@ -398,6 +442,18 @@ class MockKohaAPIClient:
                 due = datetime.date.today() + datetime.timedelta(days=days_until_due)
                 due_date = due.strftime("%Y-%m-%d")
             
+            # Generate a random public note occasionally
+            public_note = ""
+            if random.random() > 0.7:  # 30% chance of having a note
+                notes = [
+                    "Signed by author",
+                    "Large print edition",
+                    "Includes supplementary materials",
+                    "Replacement copy",
+                    "Gift from Friends of the Library",
+                ]
+                public_note = random.choice(notes)
+            
             holdings.append(HoldingItem(
                 item_id=biblio_id * 100 + i + 1,
                 barcode=f"{biblio_id:06d}{i+1:03d}",
@@ -410,7 +466,8 @@ class MockKohaAPIClient:
                 is_available=is_available,
                 due_date=due_date,
                 item_type=book["item_type"],
-                notes="",
+                notes=public_note,
+                public_note=public_note,
             ))
         
         return holdings, None

@@ -76,13 +76,17 @@ class ItemDetailScreen(Screen):
     def on_mount(self) -> None:
         """Load the record details when mounted."""
         # Setup holdings table columns
+        # Use configured terminology for call number
+        call_label = self.config.get_call_number_label_short()
+        
         table = self.query_one("#holdings-table", DataTable)
         table.add_columns(
             "Library",
             "Location",
-            "Call Number",
+            call_label,
             "Status",
             "Due Date",
+            "Note",
         )
         table.cursor_type = "row"
         table.zebra_stripes = True
@@ -145,12 +149,18 @@ class ItemDetailScreen(Screen):
                 # Determine style based on availability
                 status_text = item.status
                 
+                # Truncate public note if too long
+                note = item.public_note or "-"
+                if len(note) > 20:
+                    note = note[:17] + "..."
+                
                 table.add_row(
                     item.library_name or item.library_id,
                     item.location or "-",
                     item.call_number or "-",
                     status_text,
                     item.due_date or "-",
+                    note,
                 )
             
             # Calculate summary
@@ -188,14 +198,31 @@ class ItemDetailScreen(Screen):
         if pub_parts:
             lines.append(f"Published: {', '.join(pub_parts)}")
         
-        # ISBN and Call Number on same line if both exist
-        extra = []
+        # ISBN on its own line if it exists
         if record.isbn:
-            extra.append(f"ISBN: {record.isbn}")
-        if record.call_number:
-            extra.append(f"Call#: {record.call_number}")
-        if extra:
-            lines.append("  ".join(extra))
+            lines.append(f"ISBN:      {record.isbn}")
+        
+        # Call Number(s) based on display settings
+        call_label = self.config.get_call_number_label()
+        display_mode = self.config.call_number_display
+        
+        if display_mode == "both":
+            # Show both LOC and Dewey on separate lines if both exist
+            if record.call_number_lcc:
+                lines.append(f"LOC {call_label}: {record.call_number_lcc}")
+            if record.call_number_dewey:
+                lines.append(f"Dewey {call_label}: {record.call_number_dewey}")
+            # Fallback to generic call number if neither specific one exists
+            if not record.call_number_lcc and not record.call_number_dewey and record.call_number:
+                lines.append(f"{call_label}: {record.call_number}")
+        elif display_mode == "lcc":
+            cn = record.call_number_lcc or record.call_number
+            if cn:
+                lines.append(f"{call_label}: {cn}")
+        elif display_mode == "dewey":
+            cn = record.call_number_dewey or record.call_number
+            if cn:
+                lines.append(f"{call_label}: {cn}")
         
         # Summary - truncate if too long
         if record.summary:
