@@ -26,6 +26,7 @@ class ItemDetailScreen(Screen):
         Binding("escape", "go_back", "Back"),
         Binding("b", "go_back", "Back", show=False),
         Binding("q", "go_back", "Back", show=False),
+        Binding("enter", "select_holding", "View Holding"),
         Binding("f1", "show_help", "Help"),
     ]
     
@@ -69,7 +70,7 @@ class ItemDetailScreen(Screen):
         # Status bar
         yield FooterBar(
             prompt="",
-            shortcuts="F1=Help, Esc=Back to results",
+            shortcuts="Enter=View Holding, F1=Help, Esc=Back",
             id="status-bar"
         )
     
@@ -143,9 +144,14 @@ class ItemDetailScreen(Screen):
         if holdings_error:
             summary.update(f"Error loading holdings: {holdings_error}")
         elif holdings:
-            self.holdings = holdings
+            # Sort holdings by library name, then by location
+            holdings_sorted = sorted(
+                holdings,
+                key=lambda h: (h.library_name or h.library_id, h.location or "")
+            )
+            self.holdings = holdings_sorted
             
-            for item in holdings:
+            for item in holdings_sorted:
                 # Determine style based on availability
                 status_text = item.status
                 
@@ -236,6 +242,31 @@ class ItemDetailScreen(Screen):
     def action_go_back(self) -> None:
         """Go back to results screen."""
         self.app.pop_screen()
+    
+    def action_select_holding(self) -> None:
+        """View the selected holding in detail."""
+        table = self.query_one("#holdings-table", DataTable)
+        if table.cursor_row is not None and self.holdings:
+            row_index = table.cursor_row
+            if 0 <= row_index < len(self.holdings):
+                selected_holding = self.holdings[row_index]
+                # Get all holdings from the same library
+                library_holdings = [
+                    h for h in self.holdings
+                    if h.library_id == selected_holding.library_id
+                ]
+                self.app.push_screen(
+                    "holding_detail",
+                    {
+                        "record": self.record,
+                        "holdings": library_holdings,
+                        "selected_holding": selected_holding,
+                    }
+                )
+    
+    def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
+        """Handle double-click/enter on a row."""
+        self.action_select_holding()
     
     def action_show_help(self) -> None:
         """Show help screen."""

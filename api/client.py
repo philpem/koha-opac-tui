@@ -387,6 +387,8 @@ class KohaAPIClient:
                 author = author_match.group(1).strip()
                 # Clean up - remove trailing periods and whitespace
                 author = re.sub(r'[\s.]+$', '', author)
+                # Remove leading "by " prefix if present
+                author = re.sub(r'^by\s+', '', author, flags=re.IGNORECASE)
             
             # Extract publication year from <span ... class="publisher_date">1988</span>
             pub_year = None

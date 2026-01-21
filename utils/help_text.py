@@ -126,10 +126,52 @@ LOWER SECTION - Item Holdings:
   Call Number    Shelf location / Shelfmark
   Status         Available, On Loan, Reference Only, etc.
   Due Date       When an on-loan item is due back
+  Note           Public notes about this copy
+
+SELECTING A HOLDING:
+  Arrow Keys           Scroll through holdings table
+  Enter                View detailed information about selected holding
 
 NAVIGATION:
-  Arrow Keys           Scroll through holdings table
   Esc                  Return to search results
+
+══════════════════════════════════════════════════════════════════════════════
+                         Press Esc to return
+══════════════════════════════════════════════════════════════════════════════
+"""
+    },
+    
+    "holding_detail": {
+        "title": "HOLDING DETAILS HELP",
+        "content": """
+══════════════════════════════════════════════════════════════════════════════
+                          HOLDING DETAILS HELP
+══════════════════════════════════════════════════════════════════════════════
+
+This screen shows detailed information about holdings at a specific library.
+
+SECTIONS:
+
+  BIBLIOGRAPHIC DETAILS
+    Title, author, publication info, ISBN, and call numbers.
+
+  HOLDINGS AT [LIBRARY NAME]
+    All copies held by this library, showing:
+      Copy         Copy number
+      Location     Where in the library
+      Call Number  Shelf location / Shelfmark
+      Barcode      Item barcode
+      Status       Available, On Loan, etc.
+      Due Date     When an on-loan item is due back
+
+  ITEM DETAILS
+    Full details for the currently selected copy:
+      Library, Location, Call Number, Copy Number,
+      Barcode, Item Type, Status, Due Date, and Notes.
+
+NAVIGATION:
+  Arrow Keys           Select different copies in the table
+  Esc                  Return to item details
 
 ══════════════════════════════════════════════════════════════════════════════
                          Press Esc to return

@@ -29,6 +29,7 @@ from screens import (
     SearchScreen,
     SearchResultsScreen,
     ItemDetailScreen,
+    HoldingDetailScreen,
     SettingsScreen,
     AboutScreen,
     HelpScreen,
@@ -218,6 +219,21 @@ class KohaOPACApp(App):
     /* Help screen */
     #help-container {
         padding: 1;
+    }
+    
+    /* Holding detail screen */
+    #holding-scroll {
+        height: 1fr;
+        padding: 0 1;
+    }
+    
+    #library-title {
+        text-style: bold;
+        padding: 1 0;
+    }
+    
+    #item-details {
+        padding: 0 0 1 0;
     }
     """
     
@@ -435,6 +451,14 @@ class KohaOPACApp(App):
                 self.config,
                 self._api_client,
                 biblio_id=params.get("biblio_id", 0),
+            )
+        
+        elif name == "holding_detail":
+            return HoldingDetailScreen(
+                self.config,
+                record=params.get("record"),
+                holdings=params.get("holdings", []),
+                selected_holding=params.get("selected_holding"),
             )
         
         elif name == "settings":
