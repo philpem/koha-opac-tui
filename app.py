@@ -31,6 +31,7 @@ from screens import (
     ItemDetailScreen,
     HoldingDetailScreen,
     FullBiblioScreen,
+    MarcDetailScreen,
     SettingsScreen,
     AboutScreen,
     HelpScreen,
@@ -114,13 +115,14 @@ class KohaOPACApp(App):
     }
     
     #results-list {
-        height: 1fr;
+        height: 16;
         margin: 0 0;
         scrollbar-gutter: stable;
+        overflow-y: scroll;
     }
     
     #results-list > ListItem {
-        height: auto;
+        height: 2;
     }
     
     #pagination-info {
@@ -490,6 +492,12 @@ class KohaOPACApp(App):
         
         elif name == "full_biblio":
             return FullBiblioScreen(
+                self.config,
+                record=params.get("record"),
+            )
+        
+        elif name == "marc_detail":
+            return MarcDetailScreen(
                 self.config,
                 record=params.get("record"),
             )

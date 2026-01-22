@@ -28,6 +28,7 @@ class ItemDetailScreen(Screen):
         Binding("q", "go_back", "Back", show=False),
         Binding("enter", "select_holding", "View Holding"),
         Binding("f", "show_full_biblio", "Full Details"),
+        Binding("m", "show_marc", "MARC View"),
         Binding("f1", "show_help", "Help"),
     ]
     
@@ -71,7 +72,7 @@ class ItemDetailScreen(Screen):
         # Status bar
         yield FooterBar(
             prompt="",
-            shortcuts="Enter=View, F=Full Details, F1=Help, Esc=Back",
+            shortcuts="Enter=View, F=Full, M=MARC, F1=Help, Esc=Back",
             id="status-bar"
         )
     
@@ -290,6 +291,14 @@ class ItemDetailScreen(Screen):
         if self.record:
             self.app.push_screen(
                 "full_biblio",
+                {"record": self.record}
+            )
+    
+    def action_show_marc(self) -> None:
+        """Show full MARC record with field descriptions."""
+        if self.record:
+            self.app.push_screen(
+                "marc_detail",
                 {"record": self.record}
             )
     

@@ -319,6 +319,42 @@ TIPS:
 ══════════════════════════════════════════════════════════════════════════════
 """
     },
+    
+    "marc_detail": {
+        "title": "MARC RECORD HELP",
+        "content": """
+══════════════════════════════════════════════════════════════════════════════
+                             MARC RECORD HELP
+══════════════════════════════════════════════════════════════════════════════
+
+This screen displays the full MARC (Machine-Readable Cataloging) record
+with field descriptions.
+
+MARC STRUCTURE:
+  • Leader (LDR)       Record metadata and type information
+  • 00X fields         Control fields (no subfields)
+  • 0XX-9XX fields     Variable fields with subfields
+
+COMMON FIELDS:
+  020   ISBN                 245   Title Statement
+  050   LC Call Number       250   Edition
+  082   Dewey Call Number    260   Publication Info
+  100   Main Author          300   Physical Description
+  650   Subject Headings     700   Additional Authors
+
+SUBFIELDS:
+  Each field may contain subfields marked with $
+  Example: $a = main data, $b = subtitle, $c = responsibility
+
+NAVIGATION:
+  Arrow Keys / Scroll    Move through the record
+  Esc                    Return to item details
+
+══════════════════════════════════════════════════════════════════════════════
+                         Press Esc to return
+══════════════════════════════════════════════════════════════════════════════
+"""
+    },
 }
 
 

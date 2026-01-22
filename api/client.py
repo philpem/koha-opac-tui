@@ -302,6 +302,8 @@ class KohaAPIClient:
         This uses the same search engine as the Koha web OPAC.
         Returns HTML which we parse for results.
         """
+        import re
+        
         if not self._client:
             return None, "Client not initialized"
         
@@ -332,11 +334,30 @@ class KohaAPIClient:
         logger.debug(f"OPAC search URL: {search_url} params: {params}")
         
         try:
-            response = await self._client.get(search_url, params=params)
-            logger.debug(f"OPAC search response: {response.status_code}, length: {len(response.text)}")
+            response = await self._client.get(search_url, params=params, follow_redirects=True)
+            logger.debug(f"OPAC search response: {response.status_code}, length: {len(response.text)}, url: {response.url}")
             
             if response.status_code == 200:
                 html = response.text
+                final_url = str(response.url)
+                
+                # Check if we were redirected to a single item detail page
+                # URL will be like: opac-detail.pl?biblionumber=9
+                if 'opac-detail.pl' in final_url:
+                    logger.debug("Detected redirect to single item detail page")
+                    # Extract biblionumber from URL
+                    biblio_match = re.search(r'biblionumber=(\d+)', final_url)
+                    if biblio_match:
+                        biblio_id = int(biblio_match.group(1))
+                        # Create a minimal record - the detail screen will fetch full data
+                        record = BiblioRecord(
+                            biblio_id=biblio_id,
+                            title=f"Record #{biblio_id}",
+                            raw_data={"biblionumber": biblio_id, "source": "redirect"},
+                        )
+                        # Return as single-result search
+                        return SearchResult([record], 1, page, per_page), None
+                
                 logger.debug(f"Got HTML response, length={len(html)}")
                 logger.debug(f"HTML contains 'title_summary': {'title_summary' in html}")
                 logger.debug(f"HTML contains 'numresults': {'numresults' in html}")
@@ -601,14 +622,24 @@ class KohaAPIClient:
         
         # Extract common MARC fields
         # 245 = Title (subfields a, b, c for title, subtitle, statement of responsibility)
-        title = get_field("245", "a")
-        subtitle = get_field("245", "b")
-        if subtitle:
-            # Clean up subtitle - remove leading punctuation
-            subtitle = subtitle.lstrip(" :;/")
-            title = f"{title}: {subtitle}".strip()
-        # Clean up title - remove trailing punctuation
-        title = re.sub(r'\s*[/:;]\s*$', '', title)
+        title_a = get_field("245", "a")
+        title_b = get_field("245", "b")  # subtitle/remainder
+        title_c = get_field("245", "c")  # statement of responsibility
+        
+        # Clean up each part - remove trailing punctuation
+        if title_a:
+            title_a = re.sub(r'\s*[/:;,]\s*$', '', title_a.strip())
+        if title_b:
+            title_b = re.sub(r'\s*[/:;,]\s*$', '', title_b.strip())
+        if title_c:
+            title_c = re.sub(r'\s*[.]\s*$', '', title_c.strip())
+        
+        # Combine title parts properly
+        title = title_a or ""
+        if title_b:
+            title = f"{title}: {title_b}"
+        if title_c:
+            title = f"{title} / {title_c}"
         
         # 100 = Main author (personal name)
         # 110 = Main author (corporate name)

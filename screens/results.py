@@ -175,42 +175,10 @@ class SearchResultsScreen(Screen):
         self.query_one("#loading", LoadingIndicator).display = True
         self.query_one("#results-list", ListView).display = False
         self._load_results()
-        # Adjust list height after layout settles
-        self.set_timer(0.1, self._adjust_list_height)
     
     def on_resize(self, event) -> None:
-        """Handle terminal resize - adjust list height to show only complete items."""
-        # Reset to 1fr first, then adjust
-        try:
-            results_list = self.query_one("#results-list", ListView)
-            results_list.styles.height = "1fr"
-        except Exception:
-            pass
-        # Schedule height adjustment after layout
-        self.set_timer(0.1, self._adjust_list_height)
-    
-    def _adjust_list_height(self) -> None:
-        """Adjust the results list height to show only complete items."""
-        try:
-            results_list = self.query_one("#results-list", ListView)
-            # Get current height
-            current_height = results_list.size.height
-            if current_height <= 0:
-                return
-            
-            # Each item is 2 lines, or 3 if spaced
-            lines_per_item = 3 if self.config.result_spacing else 2
-            
-            # Calculate how many complete items fit
-            # Subtract 1 line to ensure no partial items ever show
-            complete_items = (current_height - 1) // lines_per_item
-            new_height = complete_items * lines_per_item
-            
-            # Set height to show only complete items
-            if new_height > 0:
-                results_list.styles.height = new_height
-        except Exception:
-            pass  # Ignore errors during resize
+        """Handle terminal resize."""
+        pass  # Height is fixed in CSS
     
     @work(exclusive=True)
     async def _load_results(self) -> None:
@@ -244,15 +212,24 @@ class SearchResultsScreen(Screen):
         
         if error:
             logger.debug(f"Displaying error: {error}")
-            results_list.append(ListItem(Static(f"Error: {error}")))
-            results_list.display = True
+            self._show_no_results_message(f"Error: {error}")
             return
         
         if not results or not results.records:
             logger.debug("No results to display")
-            results_list.append(ListItem(Static("No results found.")))
-            results_list.display = True
-            self._update_pagination(0, 0, 1)
+            self._show_no_results_message("No results found for your search.")
+            return
+        
+        # If only one result, go directly to detail screen
+        if len(results.records) == 1 and results.total_count == 1:
+            logger.debug("Single result - going directly to detail screen")
+            record = results.records[0]
+            # Replace this screen with the detail screen (don't push, replace)
+            self.app.pop_screen()
+            self.app.push_screen(
+                "detail",
+                {"biblio_id": record.biblio_id}
+            )
             return
         
         logger.debug(f"Displaying {len(results.records)} results")
@@ -273,6 +250,22 @@ class SearchResultsScreen(Screen):
         # Update pagination info
         self._update_pagination(results.total_count, len(results.records), results.total_pages)
     
+    def _show_no_results_message(self, message: str) -> None:
+        """Show a no results message with option to go back."""
+        results_list = self.query_one("#results-list", ListView)
+        pagination = self.query_one("#pagination-info", Static)
+        column_header = self.query_one("#column-header", Static)
+        
+        # Hide the column header for no results
+        column_header.display = False
+        
+        # Show message in list area
+        results_list.append(ListItem(Static(f"\n{message}\n\nPress Esc or Enter to search again.")))
+        results_list.display = True
+        
+        # Clear pagination
+        pagination.update("")
+    
     def _update_pagination(self, total: int, shown: int, total_pages: int) -> None:
         """Update the pagination display."""
         pagination = self.query_one("#pagination-info", Static)
@@ -288,6 +281,9 @@ class SearchResultsScreen(Screen):
         item = event.item
         if isinstance(item, ResultItem):
             self._show_detail(item.record)
+        else:
+            # If it's not a ResultItem (e.g., no results message), go back
+            self.action_go_back()
     
     def _show_detail(self, record: BiblioRecord) -> None:
         """Navigate to the detail screen for a record."""
