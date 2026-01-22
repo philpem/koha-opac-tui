@@ -12,6 +12,38 @@ import logging
 import httpx
 
 from utils.config import KohaConfig
+from api.marc_constants import (
+    MARC_FIELD_TITLE,
+    MARC_FIELD_MAIN_AUTHOR_PERSONAL,
+    MARC_FIELD_MAIN_AUTHOR_CORPORATE,
+    MARC_FIELD_PUBLICATION_OLD,
+    MARC_FIELD_PUBLICATION_RDA,
+    MARC_FIELD_ISBN,
+    MARC_FIELD_LC_CALL_NUMBER,
+    MARC_FIELD_DEWEY_DECIMAL,
+    MARC_FIELD_LOCAL_CALL_NUMBER,
+    MARC_FIELD_PHYSICAL_DESCRIPTION,
+    MARC_FIELD_SERIES,
+    MARC_FIELD_SERIES_ADDED_ENTRY,
+    MARC_FIELD_GENERAL_NOTE,
+    MARC_FIELD_SUMMARY,
+    MARC_FIELD_SUBJECT_TOPICAL,
+    MARC_FIELD_EDITION,
+    MARC_FIELD_ADDED_AUTHOR_PERSONAL,
+    MARC_FIELD_ADDED_AUTHOR_CORPORATE,
+    TITLE_SUBFIELD_TITLE,
+    TITLE_SUBFIELD_SUBTITLE,
+    TITLE_SUBFIELD_RESPONSIBILITY,
+    PUB_SUBFIELD_PLACE,
+    PUB_SUBFIELD_PUBLISHER,
+    PUB_SUBFIELD_DATE,
+    CALL_SUBFIELD_NUMBER,
+    CALL_SUBFIELD_CUTTER,
+    PHYS_SUBFIELD_EXTENT,
+    PHYS_SUBFIELD_OTHER_DETAILS,
+    PHYS_SUBFIELD_DIMENSIONS,
+    SUBFIELD_MAIN_ENTRY,
+)
 
 
 # Set up file-based logging for debugging
@@ -622,9 +654,9 @@ class KohaAPIClient:
         
         # Extract common MARC fields
         # 245 = Title (subfields a, b, c for title, subtitle, statement of responsibility)
-        title_a = get_field("245", "a")
-        title_b = get_field("245", "b")  # subtitle/remainder
-        title_c = get_field("245", "c")  # statement of responsibility
+        title_a = get_field(MARC_FIELD_TITLE, TITLE_SUBFIELD_TITLE)
+        title_b = get_field(MARC_FIELD_TITLE, TITLE_SUBFIELD_SUBTITLE)  # subtitle/remainder
+        title_c = get_field(MARC_FIELD_TITLE, TITLE_SUBFIELD_RESPONSIBILITY)  # statement of responsibility
         
         # Clean up each part - remove trailing punctuation
         if title_a:
@@ -643,15 +675,15 @@ class KohaAPIClient:
         
         # 100 = Main author (personal name)
         # 110 = Main author (corporate name)
-        main_author = get_field("100", "a") or get_field("110", "a")
+        main_author = get_field(MARC_FIELD_MAIN_AUTHOR_PERSONAL, SUBFIELD_MAIN_ENTRY) or get_field(MARC_FIELD_MAIN_AUTHOR_CORPORATE, SUBFIELD_MAIN_ENTRY)
         main_author = main_author.rstrip(" ,.")
         
         # 700 = Added entry - personal name (contributors, editors, etc.)
         # 710 = Added entry - corporate name
         contributors = []
         for field in fields:
-            if "700" in field:
-                field_data = field["700"]
+            if MARC_FIELD_ADDED_AUTHOR_PERSONAL in field:
+                field_data = field[MARC_FIELD_ADDED_AUTHOR_PERSONAL]
                 if isinstance(field_data, dict):
                     subfields = field_data.get("subfields", [])
                     name_parts = []
@@ -666,8 +698,8 @@ class KohaAPIClient:
                         if dates:
                             contributor = f"{contributor} ({dates})"
                         contributors.append(contributor)
-            if "710" in field:
-                field_data = field["710"]
+            if MARC_FIELD_ADDED_AUTHOR_CORPORATE in field:
+                field_data = field[MARC_FIELD_ADDED_AUTHOR_CORPORATE]
                 if isinstance(field_data, dict):
                     subfields = field_data.get("subfields", [])
                     for sf in subfields:
@@ -689,9 +721,9 @@ class KohaAPIClient:
         
         # 260 = Publication info (older records)
         # 264 = Production, Publication, Distribution, Manufacture (newer RDA records)
-        publisher = get_field("260", "b") or get_field("264", "b")
-        pub_place = get_field("260", "a") or get_field("264", "a")
-        pub_year = get_field("260", "c") or get_field("264", "c")
+        publisher = get_field(MARC_FIELD_PUBLICATION_OLD, PUB_SUBFIELD_PUBLISHER) or get_field(MARC_FIELD_PUBLICATION_RDA, PUB_SUBFIELD_PUBLISHER)
+        pub_place = get_field(MARC_FIELD_PUBLICATION_OLD, PUB_SUBFIELD_PLACE) or get_field(MARC_FIELD_PUBLICATION_RDA, PUB_SUBFIELD_PLACE)
+        pub_year = get_field(MARC_FIELD_PUBLICATION_OLD, PUB_SUBFIELD_DATE) or get_field(MARC_FIELD_PUBLICATION_RDA, PUB_SUBFIELD_DATE)
         
         # Clean up publisher - remove trailing punctuation
         if publisher:
@@ -706,26 +738,26 @@ class KohaAPIClient:
                 pub_year = year_match.group(1)
         
         # 020 = ISBN
-        isbn = get_field("020", "a")
+        isbn = get_field(MARC_FIELD_ISBN, SUBFIELD_MAIN_ENTRY)
         # Clean ISBN - take only the number part
         if isbn:
             isbn_match = re.match(r'[\dXx-]+', isbn)
             if isbn_match:
                 isbn = isbn_match.group(0)
-        
+
         # 050 = Library of Congress Classification
-        call_number_lcc = get_field("050", "a")
-        lcc_cutter = get_field("050", "b")
+        call_number_lcc = get_field(MARC_FIELD_LC_CALL_NUMBER, CALL_SUBFIELD_NUMBER)
+        lcc_cutter = get_field(MARC_FIELD_LC_CALL_NUMBER, CALL_SUBFIELD_CUTTER)
         if lcc_cutter:
             call_number_lcc = f"{call_number_lcc} {lcc_cutter}".strip()
         
         # 082 = Dewey Decimal Classification
-        call_number_dewey = get_field("082", "a")
-        
+        call_number_dewey = get_field(MARC_FIELD_DEWEY_DECIMAL, CALL_SUBFIELD_NUMBER)
+
         # 090 = Local call number (fallback for LOC)
         if not call_number_lcc:
-            call_number_lcc = get_field("090", "a")
-            lcc_cutter_90 = get_field("090", "b")
+            call_number_lcc = get_field(MARC_FIELD_LOCAL_CALL_NUMBER, CALL_SUBFIELD_NUMBER)
+            lcc_cutter_90 = get_field(MARC_FIELD_LOCAL_CALL_NUMBER, CALL_SUBFIELD_CUTTER)
             if lcc_cutter_90:
                 call_number_lcc = f"{call_number_lcc} {lcc_cutter_90}".strip()
         
@@ -733,22 +765,22 @@ class KohaAPIClient:
         call_number = call_number_lcc or call_number_dewey
         
         # 300 = Physical description
-        physical_desc = get_combined_subfields("300", ["a", "b", "c"])
-        
+        physical_desc = get_combined_subfields(MARC_FIELD_PHYSICAL_DESCRIPTION, [PHYS_SUBFIELD_EXTENT, PHYS_SUBFIELD_OTHER_DETAILS, PHYS_SUBFIELD_DIMENSIONS])
+
         # 490/830 = Series
-        series = get_field("490", "a") or get_field("830", "a")
-        
+        series = get_field(MARC_FIELD_SERIES, SUBFIELD_MAIN_ENTRY) or get_field(MARC_FIELD_SERIES_ADDED_ENTRY, SUBFIELD_MAIN_ENTRY)
+
         # 500 = General notes
-        notes = get_field("500", "a")
-        
+        notes = get_field(MARC_FIELD_GENERAL_NOTE, SUBFIELD_MAIN_ENTRY)
+
         # 520 = Summary
-        summary = get_field("520", "a")
-        
+        summary = get_field(MARC_FIELD_SUMMARY, SUBFIELD_MAIN_ENTRY)
+
         # 650 = Subjects
-        subjects = get_all_subfields("650", "a")
-        
+        subjects = get_all_subfields(MARC_FIELD_SUBJECT_TOPICAL, SUBFIELD_MAIN_ENTRY)
+
         # 250 = Edition
-        edition = get_field("250", "a")
+        edition = get_field(MARC_FIELD_EDITION, SUBFIELD_MAIN_ENTRY)
         
         # Combine publisher info
         full_publisher = ""
