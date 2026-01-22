@@ -11,6 +11,7 @@ from textual.widgets import Static, Input
 from textual.binding import Binding
 
 from utils.config import KohaConfig
+from utils.validators import validate_search_query
 from widgets import HeaderBar, FooterBar
 
 
@@ -146,17 +147,27 @@ class SearchScreen(Screen):
         input_widget.focus()
     
     def on_input_submitted(self, event: Input.Submitted) -> None:
-        """Handle search submission."""
+        """Handle search submission with validation."""
         query = event.value.strip()
-        if query:
-            # Navigate to results screen
-            self.app.push_screen(
-                "results",
-                {
-                    "query": query,
-                    "search_type": self.search_type,
-                }
-            )
+
+        # Validate search query
+        is_valid, error_message = validate_search_query(query)
+        if not is_valid:
+            # Update footer with error message
+            footer = self.query_one("#status-bar", FooterBar)
+            footer.update_prompt(f"Error: {error_message}")
+            # Keep input focused for correction
+            self.query_one("#search-input", Input).focus()
+            return
+
+        # Navigate to results screen with valid query
+        self.app.push_screen(
+            "results",
+            {
+                "query": query,
+                "search_type": self.search_type,
+            }
+        )
     
     def action_go_back(self) -> None:
         """Go back to previous screen."""

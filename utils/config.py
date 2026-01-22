@@ -6,7 +6,9 @@ import json
 import os
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List
+
+from utils.validators import validate_url, validate_timeout, validate_items_per_page
 
 
 CONFIG_DIR = Path.home() / ".config" / "koha-opac-tui"
@@ -69,7 +71,51 @@ class KohaConfig:
     def staff_api_url(self) -> str:
         """Get the staff API base URL."""
         return f"{self.base_url.rstrip('/')}/api/{self.api_version}"
-    
+
+    def validate(self) -> List[str]:
+        """
+        Validate configuration settings.
+
+        Returns:
+            List of error messages. Empty list if configuration is valid.
+
+        Example:
+            config = KohaConfig.load()
+            errors = config.validate()
+            if errors:
+                for error in errors:
+                    print(f"Configuration error: {error}")
+        """
+        errors = []
+
+        # Validate base URL
+        if not self.base_url or self.base_url == "https://your-koha-server.org":
+            errors.append("base_url must be configured (currently set to default value)")
+        else:
+            is_valid, error_msg = validate_url(self.base_url)
+            if not is_valid:
+                errors.append(f"base_url is invalid: {error_msg}")
+
+        # Validate timeout
+        is_valid, error_msg = validate_timeout(self.request_timeout)
+        if not is_valid:
+            errors.append(f"request_timeout is invalid: {error_msg}")
+
+        # Validate items per page
+        is_valid, error_msg = validate_items_per_page(self.items_per_page)
+        if not is_valid:
+            errors.append(f"items_per_page is invalid: {error_msg}")
+
+        # Validate call number display mode
+        if self.call_number_display not in ("lcc", "dewey", "both"):
+            errors.append(f"call_number_display must be 'lcc', 'dewey', or 'both', got: {self.call_number_display}")
+
+        # Validate call number label
+        if self.call_number_label not in ("callnumber", "shelfmark"):
+            errors.append(f"call_number_label must be 'callnumber' or 'shelfmark', got: {self.call_number_label}")
+
+        return errors
+
     def save(self) -> None:
         """Save configuration to file."""
         CONFIG_DIR.mkdir(parents=True, exist_ok=True)
