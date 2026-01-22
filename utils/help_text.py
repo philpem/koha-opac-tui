@@ -15,7 +15,6 @@ Select a search type to find items in the catalog:
 
   1. TITLE Keywords    - Search by words in the title
   2. Exact TITLE       - Search for exact title match
-  3. Exact TITLE       - Search for exact title match
   3. AUTHOR Browse     - Search by author name (Last, First)
   4. SUBJECT Keywords  - Search by subject headings
   5. SERIES            - Search for book series
