@@ -24,6 +24,9 @@ _debug_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(leveln
 logger.addHandler(_debug_handler)
 logger.setLevel(logging.DEBUG)
 
+# Search result constants
+SEARCH_RESULTS_PER_PAGE = 100  # Load all results at once and let the list scroll
+
 
 class ResultItem(ListItem):
     """A search result list item."""
@@ -194,7 +197,7 @@ class SearchResultsScreen(Screen):
             query=self.search_query,
             search_type=self.search_type,
             page=1,
-            per_page=100,  # Load all at once, let list scroll
+            per_page=SEARCH_RESULTS_PER_PAGE,
         )
         logger.debug(f"search_biblios returned: results={results}, error={error}")
         

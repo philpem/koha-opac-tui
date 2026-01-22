@@ -15,6 +15,12 @@ from api.client import KohaAPIClient, BiblioRecord, HoldingItem
 from utils.config import KohaConfig
 from widgets import HeaderBar, FooterBar
 
+# Display formatting constants
+NOTE_MAX_LENGTH = 20  # Maximum length for holding notes before truncation
+MAX_SUBJECTS_DISPLAY = 3  # Maximum number of subject headings to show
+SUMMARY_MAX_LENGTH = 120  # Maximum length for summary in compact view
+ELLIPSIS = "..."  # Truncation indicator
+
 
 class ItemDetailScreen(Screen):
     """
@@ -159,8 +165,8 @@ class ItemDetailScreen(Screen):
                 
                 # Truncate public note if too long
                 note = item.public_note or "-"
-                if len(note) > 20:
-                    note = note[:17] + "..."
+                if len(note) > NOTE_MAX_LENGTH:
+                    note = note[:NOTE_MAX_LENGTH - len(ELLIPSIS)] + ELLIPSIS
                 
                 table.add_row(
                     item.library_name or item.library_id,
@@ -247,16 +253,16 @@ class ItemDetailScreen(Screen):
         
         # Subjects
         if record.subjects:
-            subjects_str = "; ".join(record.subjects[:3])  # First 3 subjects
-            if len(record.subjects) > 3:
-                subjects_str += "..."
+            subjects_str = "; ".join(record.subjects[:MAX_SUBJECTS_DISPLAY])
+            if len(record.subjects) > MAX_SUBJECTS_DISPLAY:
+                subjects_str += ELLIPSIS
             lines.append(f"{'Subjects:':<12}{subjects_str}")
         
         # Summary - truncate if too long for compact view
         if record.summary:
             summary = record.summary
-            if len(summary) > 120:
-                summary = summary[:117] + "..."
+            if len(summary) > SUMMARY_MAX_LENGTH:
+                summary = summary[:SUMMARY_MAX_LENGTH - len(ELLIPSIS)] + ELLIPSIS
             lines.append(f"{'Summary:':<12}{summary}")
         
         return "\n".join(lines)
