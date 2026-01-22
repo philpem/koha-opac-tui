@@ -1,6 +1,8 @@
 # Koha OPAC TUI
 
-A nostalgic text-based user interface (TUI) for the Koha Integrated Library System, inspired by the classic Dynix and BLCMP library terminals of the 1990s and early 2000s.
+A text-mode user interface to interact with the Koha ILS, based on the classic Dynix and BLCMP library terminal interface.
+
+This has been "vibe coded" with Claude AI as an experiment. It probably would have been quicker to write it from scratch...
 
 ## Features
 
@@ -43,6 +45,14 @@ python app.py --demo
 # Run with a real Koha server
 python app.py --server https://your-koha-server.org
 ```
+
+### Demo servers
+
+The following public Koha ILS demo servers currently work with this, and can be used to test:
+
+  * http://demo.kohacatalog.com/
+
+There is also a demonstration mode which uses local test data.
 
 ### Command Line Options
 
@@ -106,17 +116,10 @@ You can configure these settings through the Settings menu (option 8) or by edit
 
 The application includes four classic terminal color themes:
 
-### Amber (Default)
-Classic amber phosphor monitor look, reminiscent of IBM 3278 terminals.
-
-### Green
-Green phosphor (P1) terminal style, like the classic VT100.
-
-### White
-Clean monochrome white-on-black display.
-
-### Blue
-Cool blue terminal aesthetic.
+  * Amber (Default). Classic amber phosphor monitor look.
+  * Green (P1 phosphor) terminal style.
+  * White. Clean monochrome white-on-black display.
+  * Blue. Cool blue, just as a treat.
 
 ## Project Structure
 
@@ -158,26 +161,7 @@ Ensure your Koha installation has:
 1. The REST API enabled (`RESTPublicAPI` system preference)
 2. Public endpoints accessible
 
-## Troubleshooting
-
-### Connection Issues
-
-1. Verify your Koha server URL is correct
-2. Check that the Koha REST API is enabled
-3. Use the "Test Connection" button in Settings
-4. Ensure your network allows connections to the server
-
-### No Search Results
-
-- The Koha public API may have limited search capabilities
-- Try broader search terms
-- Verify the catalog has records
-
-### Display Issues
-
-- Ensure your terminal supports Unicode characters
-- Try a different terminal emulator
-- Adjust terminal font size if text appears cramped
+The OPAC web interface is also used to run searches, because the "biblios" endpoint often doesn't work as documented for this.
 
 ## Contributing
 
@@ -186,17 +170,6 @@ Contributions are welcome! Please feel free to submit issues and pull requests.
 ## License
 
 This project is open source. See LICENSE file for details.
-
-## Acknowledgments
-
-- **Koha Community** - For the excellent open source ILS
-- **Textual** - For the modern Python TUI framework
-- **Dynix/SirsiDynix** - Inspiration from their classic terminal interfaces
-- **BLCMP** - For their pioneering library automation systems
-
-## History
-
-In the 1990s and early 2000s, library patrons would use text-based terminals to search the catalog. These systems, with their distinctive amber or green screens, became iconic symbols of library technology. This project aims to recreate that experience while connecting to modern library systems.
 
 ---
 
