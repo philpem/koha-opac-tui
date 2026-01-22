@@ -972,15 +972,3 @@ class KohaAPIClient:
             notes=data.get("public_note", ""),
             public_note=data.get("public_note", ""),
         )
-
-
-# Singleton-ish access for the API client
-_api_client: Optional[KohaAPIClient] = None
-
-
-async def get_api_client(config: KohaConfig) -> KohaAPIClient:
-    """Get or create the API client."""
-    global _api_client
-    if _api_client is None:
-        _api_client = KohaAPIClient(config)
-    return _api_client

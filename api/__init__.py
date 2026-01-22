@@ -5,7 +5,6 @@ from .client import (
     BiblioRecord,
     HoldingItem,
     SearchResult,
-    get_api_client,
 )
 from .mock_client import MockKohaAPIClient
 
@@ -15,5 +14,4 @@ __all__ = [
     "BiblioRecord",
     "HoldingItem",
     "SearchResult",
-    "get_api_client",
 ]
