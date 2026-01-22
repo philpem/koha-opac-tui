@@ -681,6 +681,9 @@ class KohaAPIClient:
             author = main_author
         elif contributors:
             author = " | ".join(contributors)
+        elif title_c:
+            # Fall back to statement of responsibility if no author fields
+            author = title_c
         else:
             author = ""
         
