@@ -16,6 +16,16 @@ from api.client import KohaAPIClient, BiblioRecord, SearchResult
 from utils.config import KohaConfig
 from widgets import HeaderBar, FooterBar
 
+# Display formatting constants
+RESULT_LINE_WIDTH = 71  # Character width for result display (leaving room for margins/scrollbar)
+RESULT_INDEX_YEAR_WIDTH = 10  # Width reserved for "NNN. " (5) and " YEAR" (4) with spacing (1)
+RESULT_TITLE_INDENT = 5  # Character indent for title line
+ELLIPSIS = "..."  # Truncation indicator text
+RESULT_YEAR_WIDTH = 4  # Width for year display (e.g., "2024")
+RESULT_LINES_PER_ITEM_SPACED = 3  # Lines per result item with spacing enabled
+RESULT_LINES_PER_ITEM_COMPACT = 2  # Lines per result item without spacing
+DEFAULT_VISIBLE_ITEMS_FALLBACK = 5  # Default visible items if height calculation fails
+
 # Set up file-based logging
 logger = logging.getLogger(__name__)
 _debug_handler = logging.FileHandler('/tmp/koha_tui_debug.log')
@@ -27,10 +37,7 @@ logger.setLevel(logging.DEBUG)
 
 class ResultItem(ListItem):
     """A search result list item."""
-    
-    # Line width for formatting (leaving room for margins/scrollbar)
-    LINE_WIDTH = 71
-    
+
     def __init__(self, index: int, record: BiblioRecord, spaced: bool = False, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.index = index
@@ -40,15 +47,15 @@ class ResultItem(ListItem):
     def compose(self) -> ComposeResult:
         author = self.record.author or "Unknown"
         # Truncate author if needed - leave room for index and year
-        max_author = self.LINE_WIDTH - 10  # "NNN. " (5) + "YEAR" (4) + space (1)
+        max_author = RESULT_LINE_WIDTH - RESULT_INDEX_YEAR_WIDTH
         if len(author) > max_author:
-            author = author[:max_author - 3] + "..."
-        
+            author = author[:max_author - len(ELLIPSIS)] + ELLIPSIS
+
         title = self.record.title
         # Truncate title - leave room for indent
-        max_title = self.LINE_WIDTH - 5  # 5 char indent
+        max_title = RESULT_LINE_WIDTH - RESULT_TITLE_INDENT
         if len(title) > max_title:
-            title = title[:max_title - 3] + "..."
+            title = title[:max_title - len(ELLIPSIS)] + ELLIPSIS
         
         # Item type indicator (short)
         item_type = ""
@@ -59,14 +66,14 @@ class ResultItem(ListItem):
             item_type = "[DVD] "
         
         year = self.record.publication_year or ""
-        if len(year) > 4:
-            year = year[:4]
-        
+        if len(year) > RESULT_YEAR_WIDTH:
+            year = year[:RESULT_YEAR_WIDTH]
+
         # Format using fixed-width fields
         # Line 1: "NNN. Author                                           YEAR"
         # Line 2: "     Title"
-        author_width = self.LINE_WIDTH - 10  # room for "NNN. " and " YEAR"
-        line1 = f"{self.index:3d}. {author:<{author_width}} {year:>4}"
+        author_width = RESULT_LINE_WIDTH - RESULT_INDEX_YEAR_WIDTH
+        line1 = f"{self.index:3d}. {author:<{author_width}} {year:>RESULT_YEAR_WIDTH}"
         line2 = f"     {item_type}{title}"
         
         content = f"{line1}\n{line2}"
@@ -164,10 +171,9 @@ class SearchResultsScreen(Screen):
     
     def _get_column_header(self) -> str:
         """Get the column header row - aligned with result items."""
-        # Match ResultItem.LINE_WIDTH = 71
         # Format: "NNN. AUTHOR...                                        YEAR"
-        author_width = 71 - 10  # same as ResultItem
-        return f"{'#':>3}  {'AUTHOR / TITLE':<{author_width}} {'YEAR':>4}"
+        author_width = RESULT_LINE_WIDTH - RESULT_INDEX_YEAR_WIDTH
+        return f"{'#':>3}  {'AUTHOR / TITLE':<{author_width}} {'YEAR':>RESULT_YEAR_WIDTH}"
     
     def on_mount(self) -> None:
         """Start loading results when mounted."""
@@ -327,9 +333,9 @@ class SearchResultsScreen(Screen):
         list_height = results_list.size.height
         if list_height > 0:
             # Each item is 2 lines (author + title), or 3 if spaced
-            lines_per_item = 3 if self.config.result_spacing else 2
+            lines_per_item = RESULT_LINES_PER_ITEM_SPACED if self.config.result_spacing else RESULT_LINES_PER_ITEM_COMPACT
             return max(1, (list_height // lines_per_item) - 1)
-        return 5  # Default fallback
+        return DEFAULT_VISIBLE_ITEMS_FALLBACK
     
     def action_page_down(self) -> None:
         """Move cursor down by a page worth of items."""
