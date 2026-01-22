@@ -7,20 +7,15 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlencode, quote
 import json
-import logging
 
 import httpx
 
 from utils.config import KohaConfig
+from utils.logger import setup_logger
 
 
-# Set up file-based logging for debugging
-logger = logging.getLogger(__name__)
-_debug_handler = logging.FileHandler('/tmp/koha_tui_debug.log')
-_debug_handler.setLevel(logging.DEBUG)
-_debug_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
-logger.addHandler(_debug_handler)
-logger.setLevel(logging.DEBUG)
+# Set up logging using centralized configuration
+logger = setup_logger(__name__)
 
 
 @dataclass
