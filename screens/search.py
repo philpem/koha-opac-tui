@@ -118,13 +118,14 @@ class SearchScreen(Screen):
                 "Examples:\n\n"
                 "    PYTHON PROGRAMMING     (Any keywords)\n"
                 "    SHAKESPEARE TRAGEDY    (Author + Subject)\n"
-                "    2020 CLIMATE           (Year + Topic)"
+                "    1969 MOON              (Year + Topic)"
             ),
             "isbn": (
+                # Pride and Prejudice, 2002 Penguin Classics edition
                 "Examples:\n\n"
-                "    9780134685991          (ISBN-13)\n"
-                "    0134685997             (ISBN-10)\n"
-                "    978-0-13-468599-1      (With dashes OK)"
+                "    9780141439518          (ISBN-13)\n"
+                "    0141439513             (ISBN-10)\n"
+                "    978-0-14-143951-8      (With dashes OK)"
             ),
         }
         return examples.get(self.search_type, "Enter your search terms below.")
