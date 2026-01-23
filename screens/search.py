@@ -85,8 +85,8 @@ class SearchScreen(Screen):
             "title": (
                 "Examples:\n\n"
                 "    CATS                (Single keyword)\n"
-                "    GREAT GATSBY        (Multiple keywords)\n"
-                "    HARRY POTTER        (Partial title)\n\n"
+                "    PLAYER OF GAMES     (Multiple keywords)\n"
+                "    FOUNDATION          (Partial title)\n\n"
                 "    (Note: OK to use partial words)"
             ),
             "title_exact": (
@@ -109,9 +109,9 @@ class SearchScreen(Screen):
             ),
             "series": (
                 "Examples:\n\n"
-                "    HARRY POTTER       (Series name)\n"
-                "    DISCWORLD          (Partial series name)\n"
-                "    WHEEL OF TIME      (Full series name)"
+                "    FOUNDATION         (Series name)\n"
+                "    DISCWORLD          (Series name)\n"
+                "    SHERLOCK           (Partial series name)"
             ),
             "keyword": (
                 "SUPER SEARCH - Search all fields\n\n"
