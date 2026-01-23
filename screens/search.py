@@ -97,9 +97,9 @@ class SearchScreen(Screen):
             ),
             "author": (
                 "Examples:\n\n"
-                "    ASIMOV, ISAAC      (Author's full name)\n"
+                "    STEPHEN KING       (Author's full name)\n"
                 "    HEMINGW            (Note: OK to shorten name)\n"
-                "    KING, STEPHEN      (Last name, First name)"
+                "    BANKS, IAIN M      (Last name, First name)"
             ),
             "subject": (
                 "Examples:\n\n"
@@ -118,7 +118,7 @@ class SearchScreen(Screen):
                 "Examples:\n\n"
                 "    PYTHON PROGRAMMING     (Any keywords)\n"
                 "    SHAKESPEARE TRAGEDY    (Author + Subject)\n"
-                "    2020 COVID             (Year + Topic)"
+                "    2020 CLIMATE           (Year + Topic)"
             ),
             "isbn": (
                 "Examples:\n\n"
