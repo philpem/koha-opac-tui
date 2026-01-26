@@ -12,6 +12,7 @@ from textual.binding import Binding
 
 from api.client import BiblioRecord, HoldingItem
 from utils.config import KohaConfig
+from utils.formatters import format_biblio_details
 from widgets import HeaderBar, FooterBar
 
 
@@ -123,54 +124,7 @@ class HoldingDetailScreen(Screen):
         """Format bibliographic record for display."""
         if not self.record:
             return "Record information not available."
-        
-        lines = []
-        
-        # Title
-        title = self.record.title or "Unknown Title"
-        lines.append(f"{'Title:':<12}{title}")
-        
-        # Author
-        if self.record.author:
-            lines.append(f"{'Author:':<12}{self.record.author}")
-        
-        # Publication info
-        pub_parts = []
-        if self.record.publisher:
-            pub_parts.append(self.record.publisher)
-        if self.record.publication_year:
-            pub_parts.append(self.record.publication_year)
-        if pub_parts:
-            lines.append(f"{'Published:':<12}{', '.join(pub_parts)}")
-        
-        # ISBN
-        if self.record.isbn:
-            lines.append(f"{'ISBN:':<12}{self.record.isbn}")
-        
-        # Call Number(s) - combined on one line using short label
-        call_label = self.config.get_call_number_label_short()
-        display_mode = self.config.call_number_display
-        
-        call_parts = []
-        if display_mode == "both":
-            if self.record.call_number_lcc:
-                call_parts.append(f"LOC: {self.record.call_number_lcc}")
-            if self.record.call_number_dewey:
-                call_parts.append(f"DDC: {self.record.call_number_dewey}")
-            if call_parts:
-                lines.append(f"{call_label + ':':<12}{' | '.join(call_parts)}")
-            elif self.record.call_number:
-                lines.append(f"{call_label + ':':<12}{self.record.call_number}")
-        elif display_mode == "lcc":
-            cn = self.record.call_number_lcc or self.record.call_number
-            if cn:
-                lines.append(f"{call_label + ':':<12}{cn}")
-        elif display_mode == "dewey":
-            cn = self.record.call_number_dewey or self.record.call_number
-            if cn:
-                lines.append(f"{call_label + ':':<12}{cn}")
-        
-        return "\n".join(lines)
+        return format_biblio_details(self.record, self.config, include_extended=False)
     
     def _format_item_details(self) -> str:
         """Format the selected holding item details."""

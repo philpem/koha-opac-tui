@@ -8,6 +8,7 @@ from .help_text import (
     get_help_title,
     HELP_SECTIONS,
 )
+from .formatters import format_biblio_details
 
 __all__ = [
     "TerminalTheme",
@@ -20,4 +21,5 @@ __all__ = [
     "get_help_for_screen",
     "get_help_title",
     "HELP_SECTIONS",
+    "format_biblio_details",
 ]
