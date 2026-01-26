@@ -30,6 +30,7 @@ class KohaConfig:
     # Display settings
     theme: str = "amber"
     library_name: str = "PUBLIC LIBRARY"
+    opac_name: str = "Dial Pac"
     items_per_page: int = 10
     
     # Search results display
