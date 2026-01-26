@@ -73,7 +73,7 @@ class ResultItem(ListItem):
         # Line 1: "NNN. Author                                           YEAR"
         # Line 2: "     Title"
         author_width = RESULT_LINE_WIDTH - RESULT_INDEX_YEAR_WIDTH
-        line1 = f"{self.index:3d}. {author:<{author_width}} {year:>RESULT_YEAR_WIDTH}"
+        line1 = f"{self.index:3d}. {author:<{author_width}} {year:>{RESULT_YEAR_WIDTH}}"
         line2 = f"     {item_type}{title}"
         
         content = f"{line1}\n{line2}"
@@ -173,7 +173,7 @@ class SearchResultsScreen(Screen):
         """Get the column header row - aligned with result items."""
         # Format: "NNN. AUTHOR...                                        YEAR"
         author_width = RESULT_LINE_WIDTH - RESULT_INDEX_YEAR_WIDTH
-        return f"{'#':>3}  {'AUTHOR / TITLE':<{author_width}} {'YEAR':>RESULT_YEAR_WIDTH}"
+        return f"{'#':>3}  {'AUTHOR / TITLE':<{author_width}} {'YEAR':>{RESULT_YEAR_WIDTH}}"
     
     def on_mount(self) -> None:
         """Start loading results when mounted."""
