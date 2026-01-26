@@ -122,7 +122,7 @@ class KohaOPACApp(App):
     }
     
     #results-list > ListItem {
-        height: 2;
+        height: auto;
     }
     
     #pagination-info {
