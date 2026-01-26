@@ -140,7 +140,7 @@ class ItemDetailScreen(Screen):
             details_widget.update(f"Error loading record: {record_error}")
         elif record:
             self.record = record
-            details_widget.update(self._format_biblio_details(record))
+            details_widget.update(format_biblio_details(record, self.config, include_extended=True))
         else:
             details_widget.update("Record not found.")
         
@@ -189,11 +189,7 @@ class ItemDetailScreen(Screen):
             table.focus()
         else:
             summary.update("No copies available in the system.")
-    
-    def _format_biblio_details(self, record: BiblioRecord) -> str:
-        """Format bibliographic record for display - compact for 80x25."""
-        return format_biblio_details(record, self.config, include_extended=True)
-    
+
     def action_go_back(self) -> None:
         """Go back to results screen."""
         self.app.pop_screen()

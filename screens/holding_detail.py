@@ -61,7 +61,8 @@ class HoldingDetailScreen(Screen):
             with ScrollableContainer(id="holding-scroll"):
                 # Bibliographic Details section
                 yield Static("BIBLIOGRAPHIC DETAILS", id="biblio-title", classes="section-title")
-                yield Static(self._format_biblio_details(), id="biblio-details")
+                biblio_text = format_biblio_details(self.record, self.config, include_extended=False) if self.record else "Record information not available."
+                yield Static(biblio_text, id="biblio-details")
                 
                 # Library Holdings section
                 yield Static(f"HOLDINGS AT: {library_name}", id="library-title", classes="section-title")
@@ -119,13 +120,7 @@ class HoldingDetailScreen(Screen):
             self.selected_holding = self.holdings[event.cursor_row]
             details_widget = self.query_one("#item-details", Static)
             details_widget.update(self._format_item_details())
-    
-    def _format_biblio_details(self) -> str:
-        """Format bibliographic record for display."""
-        if not self.record:
-            return "Record information not available."
-        return format_biblio_details(self.record, self.config, include_extended=False)
-    
+
     def _format_item_details(self) -> str:
         """Format the selected holding item details."""
         if not self.selected_holding:
