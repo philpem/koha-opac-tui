@@ -57,7 +57,7 @@ def format_biblio_details(
         lines.append(f"{'ISBN:':<12}{record.isbn}")
 
     # Call Number(s) - based on display settings
-    call_label = config.get_call_number_label_short()
+    call_label = "Call No."
     display_mode = config.call_number_display
 
     call_parts = []
