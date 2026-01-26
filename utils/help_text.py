@@ -220,13 +220,7 @@ NAVIGATION:
                              SETTINGS HELP
 ══════════════════════════════════════════════════════════════════════════════
 
-Configure the OPAC terminal settings:
-
-CONNECTION SETTINGS:
-  Koha Server URL      The web address of your Koha installation
-                       Example: https://library.example.org
-  
-  Library Name         Displayed in the header bar
+Configure your display preferences:
 
 DISPLAY SETTINGS:
   Color Theme          Choose your preferred terminal colors:
@@ -235,16 +229,21 @@ DISPLAY SETTINGS:
                        • White  - Monochrome white on black
                        • Blue   - Cool blue terminal
   
-  Items per page       How many search results to show (default: 10)
+  Results Spacing      Compact or spaced (blank line between results)
 
 BUTTONS:
-  Save Settings        Save your changes
+  Save                 Save your changes
   Cancel               Discard changes and go back
-  Test Connection      Verify the server is reachable
 
 NAVIGATION:
-  Tab                  Move between fields
+  Tab                  Move between options
+  Ctrl+S               Save settings
   Esc                  Cancel and go back
+
+LIBRARY SETTINGS:
+  Server URL, library name, call number display, and terminology are
+  configured by your library administrator via the config file or
+  command line options. See --help for details.
 
 ══════════════════════════════════════════════════════════════════════════════
                          Press Esc to return

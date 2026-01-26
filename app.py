@@ -539,6 +539,16 @@ def parse_args() -> argparse.Namespace:
         help="Library name to display"
     )
     parser.add_argument(
+        "--call-number-display",
+        choices=["both", "lcc", "dewey"],
+        help="Which call number(s) to display: both, lcc (LOC only), or dewey (Dewey only)"
+    )
+    parser.add_argument(
+        "--call-number-label",
+        choices=["callnumber", "shelfmark"],
+        help="Terminology for call numbers: callnumber or shelfmark"
+    )
+    parser.add_argument(
         "--demo",
         action="store_true",
         help="Run in demo mode with mock data (no server required)"
@@ -560,6 +570,10 @@ def main():
         config.base_url = args.server
     if args.library:
         config.library_name = args.library
+    if args.call_number_display:
+        config.call_number_display = args.call_number_display
+    if args.call_number_label:
+        config.call_number_label = args.call_number_label
     
     # Demo mode ONLY from command line flag, never from config
     config.demo_mode = args.demo

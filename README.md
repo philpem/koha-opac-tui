@@ -65,6 +65,10 @@ python app.py --theme blue        # Use blue terminal theme
 
 python app.py --server https://your-koha-server.org
 python app.py --library "Your Library Name"
+python app.py --call-number-display both    # Show both LOC and Dewey
+python app.py --call-number-display lcc     # Show LOC only
+python app.py --call-number-display dewey   # Show Dewey only
+python app.py --call-number-label shelfmark # Use "Shelfmark" instead of "Call Number"
 ```
 
 ### Keyboard Shortcuts
@@ -98,19 +102,47 @@ python app.py --library "Your Library Name"
 | Key | Action |
 |-----|--------|
 | ↑/↓ | Scroll holdings table |
+| F | Full bibliographic details |
+| M | MARC record view |
 | Escape | Go back to results |
 | F1 | Show help |
 
 ## Configuration
 
-Settings are stored in `~/.config/koha-opac-tui/config.json` and include:
+Configuration is stored in `~/.config/koha-opac-tui/config.json`.
 
-- **base_url**: Your Koha server URL
-- **library_name**: Name displayed in the header
-- **theme**: Color theme (amber, green, white, blue)
-- **items_per_page**: Number of search results per page
+### Library Administrator Settings
 
-You can configure these settings through the Settings menu (option 8) or by editing the config file directly.
+These are typically set via command line or config file, not by patrons:
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `base_url` | Koha server URL | `https://your-koha-server.org` |
+| `library_name` | Name displayed in header | `PUBLIC LIBRARY` |
+| `call_number_display` | Which call numbers to show: `both`, `lcc`, or `dewey` | `both` |
+| `call_number_label` | Terminology: `callnumber` or `shelfmark` | `callnumber` |
+
+### User Preferences
+
+These can be changed by patrons in the Settings menu:
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `theme` | Color theme: `amber`, `green`, `white`, `blue` | `amber` |
+| `result_spacing` | Add blank lines between search results | `false` |
+
+### Example Config File
+
+```json
+{
+  "base_url": "https://opac.mylibrary.org",
+  "library_name": "MY PUBLIC LIBRARY",
+  "theme": "amber",
+  "call_number_display": "dewey",
+  "call_number_label": "shelfmark",
+  "result_spacing": false
+}
+```
 
 ## Color Themes
 
