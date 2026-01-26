@@ -44,7 +44,7 @@ class SearchScreen(Screen):
         # Header bar
         yield HeaderBar(
             library_name=self.config.library_name,
-            opac_name="Dial Pac",
+            opac_name=self.config.opac_name,
             id="header"
         )
         
