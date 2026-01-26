@@ -125,3 +125,8 @@ class FooterBar(Static):
         """Update the shortcuts text."""
         self.shortcuts = shortcuts
         self.update(self.shortcuts)
+
+    def update_prompt(self, prompt: str) -> None:
+        """Update the prompt/message text displayed in the footer."""
+        self.prompt = prompt
+        self.update(self.prompt)
