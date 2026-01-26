@@ -29,6 +29,9 @@ DEFAULT_VISIBLE_ITEMS_FALLBACK = 5  # Default visible items if height calculatio
 # Get logger from centralized logging module
 logger = get_logger(__name__)
 
+# Search result constants
+SEARCH_RESULTS_PER_PAGE = 100  # Load all results at once and let the list scroll
+
 
 class ResultItem(ListItem):
     """A search result list item."""
@@ -195,7 +198,7 @@ class SearchResultsScreen(Screen):
             query=self.search_query,
             search_type=self.search_type,
             page=1,
-            per_page=100,  # Load all at once, let list scroll
+            per_page=SEARCH_RESULTS_PER_PAGE,
         )
         logger.debug(f"search_biblios returned: results={results}, error={error}")
         
