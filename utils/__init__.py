@@ -8,6 +8,7 @@ from .help_text import (
     get_help_title,
     HELP_SECTIONS,
 )
+from .logging import setup_logging, get_logger
 
 __all__ = [
     "TerminalTheme",
@@ -20,4 +21,6 @@ __all__ = [
     "get_help_for_screen",
     "get_help_title",
     "HELP_SECTIONS",
+    "setup_logging",
+    "get_logger",
 ]

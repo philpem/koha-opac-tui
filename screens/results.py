@@ -3,7 +3,6 @@ Search Results Screen - Displays search results in a list format.
 Inspired by the classic Dynix search results display.
 """
 
-import logging
 from typing import List, Optional
 from textual import work
 from textual.app import ComposeResult
@@ -14,6 +13,7 @@ from textual.binding import Binding
 
 from api.client import KohaAPIClient, BiblioRecord, SearchResult
 from utils.config import KohaConfig
+from utils.logging import get_logger
 from widgets import HeaderBar, FooterBar
 
 # Display formatting constants
@@ -26,13 +26,8 @@ RESULT_LINES_PER_ITEM_SPACED = 3  # Lines per result item with spacing enabled
 RESULT_LINES_PER_ITEM_COMPACT = 2  # Lines per result item without spacing
 DEFAULT_VISIBLE_ITEMS_FALLBACK = 5  # Default visible items if height calculation fails
 
-# Set up file-based logging
-logger = logging.getLogger(__name__)
-_debug_handler = logging.FileHandler('/tmp/koha_tui_debug.log')
-_debug_handler.setLevel(logging.DEBUG)
-_debug_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
-logger.addHandler(_debug_handler)
-logger.setLevel(logging.DEBUG)
+# Get logger from centralized logging module
+logger = get_logger(__name__)
 
 
 class ResultItem(ListItem):

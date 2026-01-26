@@ -7,11 +7,11 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlencode, quote
 import json
-import logging
 
 import httpx
 
 from utils.config import KohaConfig
+from utils.logging import get_logger
 from api.marc_constants import (
     MARC_FIELD_TITLE,
     MARC_FIELD_MAIN_AUTHOR_PERSONAL,
@@ -46,13 +46,8 @@ from api.marc_constants import (
 )
 
 
-# Set up file-based logging for debugging
-logger = logging.getLogger(__name__)
-_debug_handler = logging.FileHandler('/tmp/koha_tui_debug.log')
-_debug_handler.setLevel(logging.DEBUG)
-_debug_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
-logger.addHandler(_debug_handler)
-logger.setLevel(logging.DEBUG)
+# Get logger from centralized logging module
+logger = get_logger(__name__)
 
 
 @dataclass
