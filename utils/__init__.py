@@ -9,6 +9,7 @@ from .help_text import (
     HELP_SECTIONS,
 )
 from .logging import setup_logging, get_logger
+from .formatters import format_biblio_details
 
 __all__ = [
     "TerminalTheme",
@@ -23,4 +24,5 @@ __all__ = [
     "HELP_SECTIONS",
     "setup_logging",
     "get_logger",
+    "format_biblio_details",
 ]

@@ -13,12 +13,11 @@ from textual.binding import Binding
 
 from api.client import KohaAPIClient, BiblioRecord, HoldingItem
 from utils.config import KohaConfig
+from utils.formatters import format_biblio_details
 from widgets import HeaderBar, FooterBar
 
 # Display formatting constants
 NOTE_MAX_LENGTH = 20  # Maximum length for holding notes before truncation
-MAX_SUBJECTS_DISPLAY = 3  # Maximum number of subject headings to show
-SUMMARY_MAX_LENGTH = 120  # Maximum length for summary in compact view
 ELLIPSIS = "..."  # Truncation indicator
 
 
@@ -193,79 +192,7 @@ class ItemDetailScreen(Screen):
     
     def _format_biblio_details(self, record: BiblioRecord) -> str:
         """Format bibliographic record for display - compact for 80x25."""
-        lines = []
-        
-        # Title (prominent) - may wrap
-        title = record.title or "Unknown Title"
-        lines.append(f"{'Title:':<12}{title}")
-        
-        # Author (may include contributors separated by |)
-        if record.author:
-            lines.append(f"{'Author:':<12}{record.author}")
-        
-        # Publication info on one line
-        pub_parts = []
-        if record.publisher:
-            pub_parts.append(record.publisher)
-        if record.publication_year:
-            pub_parts.append(record.publication_year)
-        if pub_parts:
-            lines.append(f"{'Published:':<12}{', '.join(pub_parts)}")
-        
-        # ISBN on its own line if it exists
-        if record.isbn:
-            lines.append(f"{'ISBN:':<12}{record.isbn}")
-        
-        # Call Number(s) - combined on one line based on display settings
-        call_label = self.config.get_call_number_label_short()
-        display_mode = self.config.call_number_display
-        
-        call_parts = []
-        if display_mode == "both":
-            if record.call_number_lcc:
-                call_parts.append(f"LOC: {record.call_number_lcc}")
-            if record.call_number_dewey:
-                call_parts.append(f"DDC: {record.call_number_dewey}")
-            if call_parts:
-                lines.append(f"{call_label + ':':<12}{' | '.join(call_parts)}")
-            elif record.call_number:
-                lines.append(f"{call_label + ':':<12}{record.call_number}")
-        elif display_mode == "lcc":
-            cn = record.call_number_lcc or record.call_number
-            if cn:
-                lines.append(f"{call_label + ':':<12}{cn}")
-        elif display_mode == "dewey":
-            cn = record.call_number_dewey or record.call_number
-            if cn:
-                lines.append(f"{call_label + ':':<12}{cn}")
-        
-        # Edition
-        if record.edition:
-            lines.append(f"{'Edition:':<12}{record.edition}")
-        
-        # Physical description
-        if record.physical_description:
-            lines.append(f"{'Physical:':<12}{record.physical_description}")
-        
-        # Series
-        if record.series:
-            lines.append(f"{'Series:':<12}{record.series}")
-        
-        # Subjects
-        if record.subjects:
-            subjects_str = "; ".join(record.subjects[:MAX_SUBJECTS_DISPLAY])
-            if len(record.subjects) > MAX_SUBJECTS_DISPLAY:
-                subjects_str += ELLIPSIS
-            lines.append(f"{'Subjects:':<12}{subjects_str}")
-        
-        # Summary - truncate if too long for compact view
-        if record.summary:
-            summary = record.summary
-            if len(summary) > SUMMARY_MAX_LENGTH:
-                summary = summary[:SUMMARY_MAX_LENGTH - len(ELLIPSIS)] + ELLIPSIS
-            lines.append(f"{'Summary:':<12}{summary}")
-        
-        return "\n".join(lines)
+        return format_biblio_details(record, self.config, include_extended=True)
     
     def action_go_back(self) -> None:
         """Go back to results screen."""
